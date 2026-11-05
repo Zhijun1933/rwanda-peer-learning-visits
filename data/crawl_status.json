@@ -1,3 +1,10 @@
 {
-  "last_run": null
+  "last_run": "2026-11-05T08:59+00:00",
+  "candidate_groups": 53,
+  "new_urls_this_run": 0,
+  "articles_by_status": {
+    "candidate": 58,
+    "error": 2,
+    "irrelevant": 65
+  }
 }
