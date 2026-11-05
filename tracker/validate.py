@@ -77,6 +77,8 @@ def validate(data_dir: Path = DATA_DIR) -> list[str]:
             errors.append(f"{vid}: visiting_country_iso3 required unless the delegation is a multinational body")
         if v["entity_type"] not in vocab["entity_type"]:
             errors.append(f"{vid}: unknown entity_type '{v['entity_type']}'")
+        if not v["visiting_entity"].strip():
+            errors.append(f"{vid}: visiting_entity is required (describe the delegation if the institution is not named)")
         if v["delegation_size"] and not v["delegation_size"].isdigit():
             errors.append(f"{vid}: delegation_size must be an integer")
         for t in _split(v["themes"]):
