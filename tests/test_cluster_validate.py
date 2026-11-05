@@ -69,3 +69,27 @@ def test_validator_checks_itinerary(tmp_path):
     errors = " ".join(validate(tmp_path))
     assert "unknown visit_id 'V999'" in errors
     assert "unknown activity 'lecture'" in errors
+
+
+def test_region_of():
+    from tracker.config import region_of
+    assert region_of("KEN") == "East Africa"
+    assert region_of("bdi") == "Central Africa"
+    assert region_of("NGA") == "West Africa"
+    assert region_of("ZMB") == "Southern Africa"
+    assert region_of("EGY") == "North Africa"
+    assert region_of("BGD") == "Outside Africa"
+    assert region_of("") == "Multinational"
+
+
+def test_validator_rejects_qualified_country_names(tmp_path):
+    shutil.copy(DATA_DIR / "sources.csv", tmp_path / "sources.csv")
+    with open(DATA_DIR / "visits.csv", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+        fields = list(rows[0].keys())
+    rows[0]["visiting_country"] = "Kenya (with Zanzibar)"
+    with open(tmp_path / "visits.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    assert "plain country name" in " ".join(validate(tmp_path))

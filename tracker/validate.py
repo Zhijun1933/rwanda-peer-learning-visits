@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pycountry
 
-from . import DATA_DIR, config
+from . import CONFIG_DIR, DATA_DIR, config
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}(-\d{2})?$")
 VISIT_COLUMNS = ("visit_id,start_date,end_date,date_precision,date_note,visiting_country_iso3,"
@@ -17,6 +17,7 @@ SOURCE_COLUMNS = "source_id,url,outlet,source_type,pub_date,title,language,acces
 VERIFIED = {"snippet_only", "machine_read", "full_text_checked", "double_coded"}
 MULTINATIONAL_OK = {"intergovernmental", "ngo", "think_tank_academic"}
 ITINERARY_COLUMNS = ["visit_id", "date", "stop", "activity", "source_id"]
+AU_REGIONS = {"North Africa", "East Africa", "Central Africa", "West Africa", "Southern Africa"}
 
 
 def _split(value: str) -> list[str]:
@@ -73,6 +74,8 @@ def validate(data_dir: Path = DATA_DIR) -> list[str]:
         iso = v["visiting_country_iso3"]
         if iso and not pycountry.countries.get(alpha_3=iso):
             errors.append(f"{vid}: unknown ISO3 code '{iso}'")
+        if "(" in v["visiting_country"] or ";" in v["visiting_country"]:
+            errors.append(f"{vid}: visiting_country should be a plain country name; put qualifiers in notes")
         if not iso and v["entity_type"] not in MULTINATIONAL_OK:
             errors.append(f"{vid}: visiting_country_iso3 required unless the delegation is a multinational body")
         if v["entity_type"] not in vocab["entity_type"]:
@@ -127,6 +130,25 @@ def validate(data_dir: Path = DATA_DIR) -> list[str]:
 
     for sid in sorted(source_ids - used_sources):
         errors.append(f"{sid}: source not used by any visit")
+    errors.extend(validate_regions())
+    return errors
+
+
+def validate_regions(config_dir: Path = CONFIG_DIR) -> list[str]:
+    """config/regions.csv must map valid ISO3 codes to the five AU regions, once each."""
+    errors: list[str] = []
+    seen: set[str] = set()
+    with open(config_dir / "regions.csv", encoding="utf-8", newline="") as f:
+        for i, row in enumerate(csv.DictReader(f), start=2):
+            iso, region = row["iso3"], row["region"]
+            where = f"regions.csv line {i}"
+            if iso in seen:
+                errors.append(f"{where}: duplicate iso3 '{iso}'")
+            seen.add(iso)
+            if not pycountry.countries.get(alpha_3=iso):
+                errors.append(f"{where}: unknown ISO3 code '{iso}'")
+            if region not in AU_REGIONS:
+                errors.append(f"{where}: region must be one of {sorted(AU_REGIONS)}")
     return errors
 
 

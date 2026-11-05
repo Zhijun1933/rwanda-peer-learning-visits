@@ -41,6 +41,7 @@ what, from which institutions) can be described and studied.
 | [`data/sources.csv`](data/sources.csv) | One row per source: URL, outlet, type, publication date, headline |
 | [`docs/codebook.md`](docs/codebook.md) | Definitions, inclusion rules and coding procedure |
 | [`config/vocab.yaml`](config/vocab.yaml) | Controlled vocabularies used by the validator |
+| [`config/regions.csv`](config/regions.csv) | ISO3 code to African Union region, used for the regional breakdown |
 | [`index.html`](index.html) | The interactive dashboard (served by GitHub Pages; reads the two CSVs directly, so it updates whenever they change) |
 
 The repository stores structured metadata, links and coder-written one-line

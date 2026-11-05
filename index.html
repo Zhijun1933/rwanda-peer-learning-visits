@@ -171,6 +171,7 @@
       <label>To <select id="fTo"></select></label>
       <label>Delegation type <select id="fType"></select></label>
       <label>Theme <select id="fTheme"></select></label>
+      <label>Region <select id="fRegion"></select></label>
       <label>Rwanda Cooperation <select id="fRci">
         <option value="">Any</option><option value="explicit">Named in a source</option><option value="not_mentioned">Not mentioned</option>
       </select></label>
@@ -195,6 +196,15 @@
         <div class="legend" id="mapLegend"></div>
         <div id="map"></div>
         <div class="mini-table" id="mapTable" hidden></div>
+      </figure>
+
+      <figure class="card wide" id="cardRegion">
+        <div class="card-head">
+          <div><h2>Visits by region</h2><p class="cap">Sending countries grouped by African Union region. Select a bar to filter.</p></div>
+          <button class="toggle" data-table="region" type="button">Show table</button>
+        </div>
+        <div id="region"></div>
+        <div class="mini-table" id="regionTable" hidden></div>
       </figure>
 
       <figure class="card wide" id="cardYear">
@@ -386,8 +396,12 @@
   }
 
   /* ---------------- state ---------------- */
-  let VISITS = [], SOURCES = {}, WORLD = null;
-  const state = { from: null, to: null, type: "", theme: "", rci: "", search: "", country: "" };
+  let VISITS = [], SOURCES = {}, WORLD = null, REGIONS = {};
+  // African Union regions (config/regions.csv); other countries are "Outside Africa".
+  const REGION_ORDER = ["East Africa", "West Africa", "Southern Africa", "Central Africa", "North Africa",
+    "Outside Africa", "Multinational"];
+  const regionOf = (iso) => !iso ? "Multinational" : (REGIONS[iso] || "Outside Africa");
+  const state = { from: null, to: null, type: "", theme: "", region: "", rci: "", search: "", country: "" };
 
   function filtered() {
     const q = state.search.toLowerCase();
@@ -399,10 +413,11 @@
       if (state.type === "_civilian" && isDefence(v)) return false;
       if (state.type && !state.type.startsWith("_") && v.entity_type !== state.type) return false;
       if (state.theme && !split(v.themes).includes(state.theme)) return false;
+      if (state.region && v.region !== state.region) return false;
       if (state.rci && v.rci_involvement !== state.rci) return false;
       if (state.country && v.visiting_country_iso3 !== state.country) return false;
       if (q) {
-        const hay = [v.visiting_country, v.visiting_entity, v.lead, v.rwandan_hosts, v.summary, v.co_facilitator, v.themes]
+        const hay = [v.visiting_country, v.region, v.visiting_entity, v.lead, v.rwandan_hosts, v.summary, v.co_facilitator, v.themes]
           .join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
@@ -436,6 +451,11 @@
     const themes = [...new Set(VISITS.flatMap(v => split(v.themes)))].sort((a, b) => (THEME_LABEL[a] || a).localeCompare(THEME_LABEL[b] || b));
     themes.forEach(t => themeSel.appendChild(el("option", { value: t }, THEME_LABEL[t] || t)));
 
+    const regionSel = $("fRegion");
+    regionSel.appendChild(el("option", { value: "" }, "All"));
+    REGION_ORDER.filter(r => VISITS.some(v => v.region === r))
+      .forEach(r => regionSel.appendChild(el("option", { value: r }, r)));
+
     const bind = (id, key, num) => $(id).addEventListener(id === "fSearch" ? "input" : "change", (e) => {
       state[key] = num ? +e.target.value : e.target.value;
       if (key === "from" && state.from > state.to) { state.to = state.from; $("fTo").value = state.to; }
@@ -443,11 +463,12 @@
       render();
     });
     bind("fFrom", "from", true); bind("fTo", "to", true); bind("fType", "type"); bind("fTheme", "theme");
+    bind("fRegion", "region");
     bind("fRci", "rci"); bind("fSearch", "search");
     $("resetBtn").addEventListener("click", () => {
-      Object.assign(state, { from: ymin, to: ymax, type: "", theme: "", rci: "", search: "", country: "" });
+      Object.assign(state, { from: ymin, to: ymax, type: "", theme: "", region: "", rci: "", search: "", country: "" });
       $("fFrom").value = ymin; $("fTo").value = ymax;
-      ["fType", "fTheme", "fRci", "fSearch"].forEach(id => { $(id).value = ""; });
+      ["fType", "fTheme", "fRegion", "fRci", "fSearch"].forEach(id => { $(id).value = ""; });
       render();
     });
 
@@ -474,6 +495,7 @@
       const name = (VISITS.find(v => v.visiting_country_iso3 === state.country) || {}).visiting_country || state.country;
       add(`Country: ${name}`, () => { state.country = ""; });
     }
+    if (state.region) add(`Region: ${state.region}`, () => { state.region = ""; $("fRegion").value = ""; });
     if (state.theme) add(`Theme: ${THEME_LABEL[state.theme] || state.theme}`, () => { state.theme = ""; $("fTheme").value = ""; });
   }
 
@@ -650,6 +672,14 @@
     });
     box.appendChild(svg);
   }
+  function renderRegion(rows) {
+    const m = d3.rollup(rows, g => g.length, v => v.region);
+    const items = REGION_ORDER.filter(r => m.get(r)).map(r => ({ key: r, n: m.get(r), label: r }));
+    renderHBars("region", "regionTable", items, {
+      colName: "Region", aria: "Bar chart of visits per sending region", active: state.region,
+      onPick: (k) => { state.region = state.region === k ? "" : k; $("fRegion").value = state.region; render(); }
+    });
+  }
   function countBy(rows, field, labelMap) {
     const m = new Map();
     rows.forEach(v => split(v[field]).forEach(k => m.set(k, (m.get(k) || 0) + 1)));
@@ -815,6 +845,7 @@
     renderChips();
     renderTiles(rows);
     renderMap(rows);
+    renderRegion(rows);
     renderYear(rows);
     renderHBars("theme", "themeTable", countBy(rows, "themes", THEME_LABEL), {
       colName: "Theme", aria: "Bar chart of visits per theme", active: state.theme,
@@ -845,6 +876,11 @@
       return;
     }
     try { WORLD = await fetch(WORLD_URL).then(r => r.json()); } catch (e) { WORLD = null; }
+    try {
+      const rText = await fetch("config/regions.csv", { cache: "no-cache" }).then(r => r.ok ? r.text() : "");
+      d3.csvParse(rText).forEach(r => { REGIONS[r.iso3] = r.region; });
+    } catch (e) { REGIONS = {}; }
+    VISITS.forEach(v => { v.region = regionOf(v.visiting_country_iso3); });
     await loadOptional();
     const latest = VISITS.map(v => v.start_date).sort().pop();
     const srcN = Object.keys(SOURCES).length;
