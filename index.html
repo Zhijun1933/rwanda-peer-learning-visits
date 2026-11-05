@@ -128,6 +128,35 @@
   .fw-fam li { margin: 3px 0; }
   .fw-fam li b { color: var(--text-primary); font-weight: 600; margin-right: 4px; }
   .sub-h { font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
+  .tool-controls { margin: 4px 0 12px; }
+  .tool-controls label { font-size: 12px; }
+  .xt-scroll { overflow-x: auto; }
+  table.xt { border-collapse: separate; border-spacing: 2px; font-size: 12px; min-width: 100%; }
+  table.xt th { font-weight: 600; color: var(--text-secondary); text-align: left; padding: 4px 6px; vertical-align: bottom; }
+  table.xt thead th.col { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+                          font-weight: 500; padding: 6px 2px; text-align: left; }
+  table.xt td { text-align: center; padding: 5px 4px; border-radius: 4px; font-variant-numeric: tabular-nums; min-width: 30px; }
+  table.xt td.rowlab { text-align: left; white-space: nowrap; color: var(--text-primary); padding-right: 10px; }
+  table.xt td.tot { color: var(--text-muted); }
+  table.xt td.cell { cursor: default; }
+  .cmp-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr 70px; gap: 8px; align-items: center;
+             font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid var(--grid); }
+  .cmp-row .lab { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cmp-row .sig { color: var(--text-muted); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+  .cmp-bars { position: relative; height: 22px; }
+  .cmp-bars .b { position: absolute; height: 8px; border-radius: 0 4px 4px 0; left: 0; }
+  .cmp-bars .b.a { top: 2px; background: var(--series-1); }
+  .cmp-bars .b.b2 { top: 12px; background: var(--series-2); }
+  .cmp-bars .v { position: absolute; font-size: 10.5px; color: var(--text-muted); line-height: 10px; }
+  .tool-note { font-size: 12px; color: var(--text-muted); margin: 8px 0 0; }
+  .tool-controls label { max-width: 100%; }
+  .tool-controls select { max-width: 100%; }
+  @media (max-width: 640px) {
+    .tool-controls label { flex: 1 1 100%; }
+    .cmp-row { grid-template-columns: 1fr 64px; row-gap: 2px; }
+    .cmp-row .lab { grid-column: 1 / -1; }
+    .cmp-row.head span:nth-child(2) { grid-column: 1 / 2; }
+  }
   .badge { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px;
            border: 1px solid var(--series-2); color: var(--series-2); margin-left: 8px; vertical-align: 2px; }
   .pf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; margin: 4px 0 16px; }
@@ -257,6 +286,41 @@
         <div class="mini-table" id="itinTable" hidden></div>
       </figure>
 
+      <section class="card wide" id="cardXtab" aria-labelledby="xtTitle">
+        <div class="card-head">
+          <div><h2 id="xtTitle">Cross-tabulate</h2>
+            <p class="cap">Count visits for any two dimensions, for the visits selected by the filters above.
+              Darker cells hold more visits. For multi-valued fields (themes, hosts, stops, HGS) a visit counts once in every column it mentions.</p></div>
+          <button class="toggle" id="xtCsv" type="button">Download table</button>
+        </div>
+        <div class="filters tool-controls">
+          <label>Rows <select id="xtRow"></select></label>
+          <label>Columns <select id="xtCol"></select></label>
+          <label>Show <select id="xtMode">
+            <option value="n">Number of visits</option><option value="row">% of row's visits</option><option value="col">% of column's visits</option>
+          </select></label>
+          <label>Columns shown <select id="xtTop"><option value="12">Top 12</option><option value="20">Top 20</option><option value="0">All</option></select></label>
+          <button class="iconbtn" id="xtSwap" type="button">Swap</button>
+        </div>
+        <div class="xt-scroll" id="xt"></div>
+        <p class="tool-note" id="xtNote"></p>
+      </section>
+
+      <section class="card wide" id="cardCmp" aria-labelledby="cmpTitle">
+        <div class="card-head">
+          <div><h2 id="cmpTitle">Compare two groups</h2>
+            <p class="cap">Share of each group's visits that mention each value, sorted by the size of the gap. Uses the visits selected by the filters above.</p></div>
+        </div>
+        <div class="filters tool-controls">
+          <label>Group visits by <select id="cmpBy"></select></label>
+          <label><span><i class="sw" style="background:var(--series-1)"></i> Group A</span> <select id="cmpA"></select></label>
+          <label><span><i class="sw" style="background:var(--series-2)"></i> Group B</span> <select id="cmpB"></select></label>
+          <label>Compare on <select id="cmpOn"></select></label>
+        </div>
+        <div id="cmp"></div>
+        <p class="tool-note" id="cmpNote"></p>
+      </section>
+
       <section class="card wide" aria-labelledby="fwTitle">
         <div class="card-head">
           <div><h2 id="fwTitle">Analytical framework</h2>
@@ -296,7 +360,7 @@
       <section class="card wide" aria-labelledby="recordsTitle">
         <div class="card-head">
           <div><h2 id="recordsTitle">Records</h2><p class="cap" id="recordsCap">Select a row for details and sources.</p></div>
-          <a class="toggle" href="data/visits.csv" download>Download CSV</a>
+          <button class="toggle" id="dlFiltered" type="button">Download filtered visits (CSV)</button>
         </div>
         <div class="records-scroll"><table id="records"></table></div>
       </section>
@@ -923,6 +987,175 @@
     try { CRAWL = crawlT ? JSON.parse(crawlT) : null; } catch (e) { CRAWL = null; }
   }
 
+  /* ---------------- analysis tools ---------------- */
+  const PERIOD_CUT = "2018-10"; // Rwanda Cooperation Initiative launched October 2018
+  function eraOf(y) { return y <= 2012 ? "2008–2012" : y <= 2017 ? "2013–2017" : y <= 2022 ? "2018–2022" : "2023–2026"; }
+  const stopsOf = (() => { let cache = null; return (vid) => {
+    if (!cache) { cache = new Map(); ITIN.forEach(r => { if (!cache.has(r.visit_id)) cache.set(r.visit_id, new Set()); cache.get(r.visit_id).add(r.stop); }); }
+    return [...(cache.get(vid) || [])]; }; })();
+  const DIMS = {
+    region:  { label: "Region", order: () => REGION_ORDER, get: v => [v.region] },
+    track:   { label: "Defence vs civilian", get: v => [isDefence(v) ? "Defence colleges" : "Civilian and other"] },
+    type:    { label: "Delegation type", get: v => [TYPE_LABEL[v.entity_type] || v.entity_type] },
+    period:  { label: "Before / after Rwanda Cooperation (Oct 2018)", order: () => ["Before Oct 2018", "Oct 2018 onward"],
+               get: v => [v.start_date < PERIOD_CUT ? "Before Oct 2018" : "Oct 2018 onward"] },
+    era:     { label: "Five-year period", order: () => ["2008–2012", "2013–2017", "2018–2022", "2023–2026"], get: v => [eraOf(yearOf(v))] },
+    rci:     { label: "Rwanda Cooperation named", get: v => [v.rci_involvement === "explicit" ? "Named in a source" : "Not mentioned"] },
+    country: { label: "Sending country", get: v => [v.visiting_country || "Multinational body"] },
+    theme:   { label: "Theme", multi: true, get: v => split(v.themes).map(t => THEME_LABEL[t] || t) },
+    host:    { label: "Rwandan host institution", multi: true, get: v => split(v.rwandan_hosts) },
+    stop:    { label: "Itinerary stop", multi: true, get: v => stopsOf(v.visit_id) },
+    hgs:     { label: "Home-Grown Solution named", multi: true, get: v => split(v.hgs_mentioned) }
+  };
+  const SINGLE = Object.keys(DIMS).filter(k => !DIMS[k].multi);
+  function valuesOf(dim, rows) {
+    const c = new Map();
+    rows.forEach(v => new Set(DIMS[dim].get(v)).forEach(k => c.set(k, (c.get(k) || 0) + 1)));
+    const order = DIMS[dim].order ? DIMS[dim].order() : null;
+    const keys = [...c.keys()];
+    keys.sort(order ? (a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99)
+                    : (a, b) => c.get(b) - c.get(a) || a.localeCompare(b));
+    return { keys, count: c };
+  }
+  function fillSelect(id, opts, value) {
+    const s = $(id); s.replaceChildren();
+    opts.forEach(([v, l]) => s.appendChild(el("option", { value: v }, l)));
+    if (value != null && opts.some(o => o[0] === value)) s.value = value;
+  }
+  const csvCell = (x) => { const t = String(x ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  function downloadCsv(name, header, rows) {
+    const text = [header, ...rows].map(r => r.map(csvCell).join(",")).join("\n");
+    const a = el("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" })), download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  /* cross-tab */
+  let XT_LAST = null;
+  function renderXtab(rows) {
+    const r = $("xtRow").value, c = $("xtCol").value, mode = $("xtMode").value, top = +$("xtTop").value;
+    const box = $("xt"); box.replaceChildren();
+    if (!rows.length) { box.appendChild(el("p", { class: "empty" }, "No visits match the filters.")); $("xtNote").textContent = ""; return; }
+    const R = valuesOf(r, rows), C = valuesOf(c, rows);
+    let cols = C.keys; const hidden = top && cols.length > top ? cols.length - top : 0;
+    if (!DIMS[c].order && top) cols = cols.slice(0, top);
+    const cell = new Map();
+    rows.forEach(v => {
+      const rs = new Set(DIMS[r].get(v)), cs = new Set(DIMS[c].get(v));
+      rs.forEach(a => cs.forEach(b => { const k = a + "\u0001" + b; cell.set(k, (cell.get(k) || 0) + 1); }));
+    });
+    const val = (a, b) => cell.get(a + "\u0001" + b) || 0;
+    const shown = (a, b) => {
+      const n = val(a, b);
+      if (mode === "row") return R.count.get(a) ? n / R.count.get(a) : 0;
+      if (mode === "col") return C.count.get(b) ? n / C.count.get(b) : 0;
+      return n;
+    };
+    let maxV = 0; R.keys.forEach(a => cols.forEach(b => { maxV = Math.max(maxV, shown(a, b)); }));
+    const fmt = (x) => mode === "n" ? (x ? String(x) : "") : (x ? Math.round(100 * x) + "%" : "");
+    const t = el("table", { class: "xt" }); const thead = el("thead"); const hr = el("tr");
+    hr.appendChild(el("th", null, `${DIMS[r].label} ↓ · ${DIMS[c].label} →`));
+    cols.forEach(b => hr.appendChild(el("th", { class: "col", title: b }, b.length > 34 ? b.slice(0, 33) + "…" : b)));
+    hr.appendChild(el("th", { class: "col" }, "Visits in row"));
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = el("tbody");
+    R.keys.forEach(a => {
+      const tr = el("tr"); tr.appendChild(el("td", { class: "rowlab" }, a));
+      cols.forEach(b => {
+        const x = shown(a, b), n = val(a, b);
+        const alpha = maxV ? Math.max(0, x / maxV) : 0;
+        const td = el("td", { class: "cell" }, fmt(x));
+        if (n) {
+          td.style.background = `color-mix(in srgb, var(--series-1) ${Math.round(8 + 72 * alpha)}%, transparent)`;
+          if (alpha > 0.55) td.style.color = "#fff";
+          bindTip(td, (e) => showTip(e, `${n} visit${n > 1 ? "s" : ""}`, `${a} · ${b}`,
+            `${Math.round(100 * n / R.count.get(a))}% of ${a} · ${Math.round(100 * n / C.count.get(b))}% of ${b}`));
+        }
+        tr.appendChild(td);
+      });
+      tr.appendChild(el("td", { class: "tot" }, String(R.count.get(a))));
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); box.appendChild(t);
+    XT_LAST = { r, c, rows: R.keys.map(a => [a, ...cols.map(b => val(a, b)), R.count.get(a)]), cols };
+    $("xtNote").textContent = `${rows.length} visits.` + (hidden ? ` ${hidden} less frequent column value${hidden > 1 ? "s" : ""} hidden; choose "All" to show them.` : "")
+      + (DIMS[r].multi || DIMS[c].multi ? " Rows or columns can overlap because a visit can carry several values." : "");
+  }
+
+  /* two-group comparison with two-sided Fisher's exact test */
+  const LF = [0]; function lf(n) { for (let i = LF.length; i <= n; i++) LF[i] = LF[i - 1] + Math.log(i); return LF[n]; }
+  function fisher(a, b, c, d) {
+    const n = a + b + c + d, r1 = a + b, c1 = a + c;
+    const p = (x) => Math.exp(lf(r1) + lf(n - r1) + lf(c1) + lf(n - c1) - lf(n) - lf(x) - lf(r1 - x) - lf(c1 - x) - lf(n - r1 - c1 + x));
+    const p0 = p(a); let s = 0;
+    for (let x = Math.max(0, r1 + c1 - n); x <= Math.min(r1, c1); x++) { const px = p(x); if (px <= p0 * (1 + 1e-7)) s += px; }
+    return Math.min(1, s);
+  }
+  function renderCompare(rows) {
+    const by = $("cmpBy").value, A = $("cmpA").value, B = $("cmpB").value, on = $("cmpOn").value;
+    const box = $("cmp"); box.replaceChildren();
+    const ga = rows.filter(v => DIMS[by].get(v).includes(A)), gb = rows.filter(v => DIMS[by].get(v).includes(B));
+    if (!ga.length || !gb.length || A === B) {
+      box.appendChild(el("p", { class: "empty" }, A === B ? "Choose two different groups." : "One of the groups has no visits under the current filters."));
+      $("cmpNote").textContent = ""; return;
+    }
+    const va = valuesOf(on, ga).count, vb = valuesOf(on, gb).count;
+    const keys = [...new Set([...va.keys(), ...vb.keys()])];
+    const items = keys.map(k => {
+      const a = va.get(k) || 0, b = vb.get(k) || 0;
+      return { k, a, b, pa: a / ga.length, pb: b / gb.length, p: fisher(a, ga.length - a, b, gb.length - b) };
+    }).sort((x, y) => Math.abs(y.pa - y.pb) - Math.abs(x.pa - x.pb) || (y.a + y.b) - (x.a + x.b)).slice(0, 15);
+    const head = el("div", { class: "cmp-row head", style: "border-bottom:1px solid var(--axis);color:var(--text-muted);font-size:11.5px" });
+    head.appendChild(el("span", null, DIMS[on].label));
+    head.appendChild(el("span", null, `Share of visits · A: ${A} (n = ${ga.length}) · B: ${B} (n = ${gb.length})`));
+    head.appendChild(el("span", { class: "sig" }, "Fisher p"));
+    box.appendChild(head);
+    items.forEach(it => {
+      const row = el("div", { class: "cmp-row" });
+      row.appendChild(el("span", { class: "lab", title: it.k }, it.k));
+      const bars = el("div", { class: "cmp-bars" });
+      const mk = (cls, p, n, top) => {
+        const b = el("i", { class: "b " + cls, style: `width:calc(${(85 * p).toFixed(1)}% + 2px)` }); bars.appendChild(b);
+        const lab = el("span", { class: "v", style: `left:calc(${(85 * p).toFixed(1)}% + 6px);top:${top}px` }, `${Math.round(100 * p)}% (${n})`);
+        bars.appendChild(lab);
+      };
+      mk("a", it.pa, it.a, 1); mk("b2", it.pb, it.b, 11);
+      row.appendChild(bars);
+      row.appendChild(el("span", { class: "sig", title: "Two-sided Fisher's exact test" }, (it.p < 0.05 ? "● " : "") + (it.p < 0.001 ? "<0.001" : it.p.toFixed(3))));
+      box.appendChild(row);
+    });
+    const small = Math.min(ga.length, gb.length) < 10;
+    $("cmpNote").textContent = "● p < 0.05 (two-sided Fisher's exact test, not corrected for multiple comparisons). "
+      + "The data come from published reports, so these are differences in what was reported, not necessarily in what happened."
+      + (small ? " At least one group has fewer than 10 visits: treat any gap as a lead, not a result." : "");
+  }
+
+  function initTools() {
+    const dimOpts = Object.keys(DIMS).map(k => [k, DIMS[k].label]);
+    fillSelect("xtRow", dimOpts, "region"); fillSelect("xtCol", dimOpts, "theme");
+    ["xtRow", "xtCol", "xtMode", "xtTop"].forEach(id => $(id).addEventListener("change", () => renderXtab(filtered())));
+    $("xtSwap").addEventListener("click", () => { const a = $("xtRow").value; $("xtRow").value = $("xtCol").value; $("xtCol").value = a; renderXtab(filtered()); });
+    $("xtCsv").addEventListener("click", () => {
+      if (!XT_LAST) return;
+      downloadCsv(`crosstab_${XT_LAST.r}_by_${XT_LAST.c}.csv`, [DIMS[XT_LAST.r].label, ...XT_LAST.cols, "Visits in row"], XT_LAST.rows);
+    });
+    fillSelect("cmpBy", SINGLE.map(k => [k, DIMS[k].label]), "region");
+    fillSelect("cmpOn", dimOpts.filter(([k]) => k !== "country"), "theme");
+    const syncGroups = () => {
+      const keys = valuesOf($("cmpBy").value, VISITS).keys;
+      const prevA = $("cmpA").value, prevB = $("cmpB").value;
+      fillSelect("cmpA", keys.map(k => [k, k]), keys.includes(prevA) ? prevA : keys[0]);
+      fillSelect("cmpB", keys.map(k => [k, k]), keys.includes(prevB) && prevB !== $("cmpA").value ? prevB : keys[1] || keys[0]);
+    };
+    syncGroups();
+    $("cmpBy").addEventListener("change", () => { syncGroups(); renderCompare(filtered()); });
+    ["cmpA", "cmpB", "cmpOn"].forEach(id => $(id).addEventListener("change", () => renderCompare(filtered())));
+    $("dlFiltered").addEventListener("click", () => {
+      const rows = filtered();
+      const cols = Object.keys(VISITS[0]).filter(k => k !== "region");
+      downloadCsv(`peer_learning_visits_filtered_${rows.length}.csv`, [...cols, "region"], rows.map(v => [...cols.map(k => v[k]), v.region]));
+    });
+  }
+
   /* ---------------- render all ---------------- */
   function render() {
     const rows = filtered();
@@ -939,6 +1172,8 @@
       colName: "Institution", aria: "Bar chart of visits per Rwandan host institution"
     });
     renderItin(rows);
+    renderXtab(rows);
+    renderCompare(rows);
     renderCoding(rows);
     renderPilot();
     renderRecords(rows);
@@ -972,6 +1207,7 @@
     $("meta").textContent = `${VISITS.length} visits · ${srcN} sources · latest visit ${latest.slice(0, 7)} · version 0.1`;
     $("app").hidden = false;
     initControls();
+    initTools();
     renderFramework();
     renderReview();
     render();
