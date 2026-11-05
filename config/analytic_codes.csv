@@ -1,25 +1,25 @@
-code,name,parent,definition
-A,How Rwanda presents itself,,Host voice
-A1,Model claim,A,Rwanda described as a model or reference point with a comparative claim
-A2,Catastrophe-to-transformation narrative,A,Visit framed by the 1994 genocide and recovery since
-A3,Home-grown authorship,A,Solutions presented as Rwandan-made rather than imported
-A4,Ownership and self-reliance,A,Self-determination; not depending on donors
-A5,Unity and identity,A,National unity or identity as the base of development
-A6,Security as a precondition,A,Security and the RDF presented as the foundation of development
-B,How visitors frame Rwanda,,Guest voice
-B1,Emulation intent,B,Visitor says they will adopt or adapt a programme
-B2,Similarity claim,B,Visitor stresses shared conditions
-B3,Selective borrowing,B,Visitor picks tools while distancing from the whole model
-B4,Status deference,B,Visitor positions Rwanda as senior or exemplary
-B5,Reciprocity,B,Visit framed as mutual learning
-C,Exhibition apparatus,,How visits are organised and staged
-C1,Itinerary standardisation,C,Same sites and briefings recur across delegations
-C2,Showcase sites,C,Specific places used as demonstrations
-C3,Gatekeeping,C,RCI or a ministry decides what visitors see and who briefs them
-C4,Monetisation,C,Fees; RCI described as a company or service provider
-C5,Third-party sponsorship,C,Donors or IOs organising or paying
-D,Sovereignty claims,,
-D1,Domestic audience,D,Visit reported to Rwandans as international recognition
-D2,Foreign-policy instrument,D,Visits tied to agreements; MoUs; joint commissions
-D3,Norm entrepreneurship,D,Rwanda as a source of governance norms for Africa
-D4,Counter-narrative,D,Rebuttal of external criticism
+code,name,parent,definition,dimension
+A,How Rwanda presents itself,,Host voice,
+A1,Model claim,A,Rwanda described as a model or reference point with a comparative claim,status
+A2,Catastrophe-to-transformation narrative,A,Visit framed by the 1994 genocide and recovery since,legitimation
+A3,Home-grown authorship,A,Solutions presented as Rwandan-made rather than imported,autonomy
+A4,Ownership and self-reliance,A,Self-determination; not depending on donors,autonomy
+A5,Unity and identity,A,National unity or identity as the base of development,legitimation
+A6,Security as a precondition,A,Security and the RDF presented as the foundation of development,legitimation
+B,How visitors frame Rwanda,,Guest voice,
+B1,Emulation intent,B,Visitor says they will adopt or adapt a programme,status
+B2,Similarity claim,B,Visitor stresses shared conditions,status
+B3,Selective borrowing,B,Visitor picks tools while distancing from the whole model,status_limits
+B4,Status deference,B,Visitor positions Rwanda as senior or exemplary,status
+B5,Reciprocity,B,Visit framed as mutual learning,status_limits
+C,Exhibition apparatus,,How visits are organised and staged,
+C1,Itinerary standardisation,C,Same sites and briefings recur across delegations,apparatus
+C2,Showcase sites,C,Specific places used as demonstrations,apparatus
+C3,Gatekeeping,C,RCI or a ministry decides what visitors see and who briefs them,apparatus
+C4,Monetisation,C,Fees; RCI described as a company or service provider,apparatus
+C5,Third-party sponsorship,C,Donors or IOs organising or paying,autonomy_limits
+D,Sovereignty claims,,,
+D1,Domestic audience,D,Visit reported to Rwandans as international recognition,status
+D2,Foreign-policy instrument,D,Visits tied to agreements; MoUs; joint commissions,apparatus
+D3,Norm entrepreneurship,D,Rwanda as a source of governance norms for Africa,status
+D4,Counter-narrative,D,Rebuttal of external criticism,autonomy

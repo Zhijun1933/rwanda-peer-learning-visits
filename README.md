@@ -42,6 +42,8 @@ what, from which institutions) can be described and studied.
 | [`docs/codebook.md`](docs/codebook.md) | Definitions, inclusion rules and coding procedure |
 | [`config/vocab.yaml`](config/vocab.yaml) | Controlled vocabularies used by the validator |
 | [`config/regions.csv`](config/regions.csv) | ISO3 code to African Union region, used for the regional breakdown |
+| [`docs/analytic_codebook.md`](docs/analytic_codebook.md) | Qualitative codebook, analytic dimensions and change log |
+| [`docs/pilots/`](docs/pilots/) | Coding pilot reports (counts only) |
 | [`index.html`](index.html) | The interactive dashboard (served by GitHub Pages; reads the two CSVs directly, so it updates whenever they change) |
 
 The repository stores structured metadata, links and coder-written one-line
