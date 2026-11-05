@@ -1,0 +1,21 @@
+[project]
+name = "rwanda-peer-learning-visits"
+version = "0.1.0"
+description = "A documented dataset of foreign delegations' study visits to Rwanda, with a polite discovery pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT (code); CC BY 4.0 (data)" }
+dependencies = [
+  "requests>=2.31",
+  "trafilatura>=1.8",
+  "pycountry>=23.12",
+  "python-dateutil>=2.8",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40"]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

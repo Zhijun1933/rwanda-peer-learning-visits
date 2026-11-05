@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning from Rwanda: A Tracker of Peer-Learning Visits</title>
+<meta name="description" content="A documented, source-linked dataset of delegations that travel to Rwanda to learn from its institutions and programmes.">
+<style>
+  .viz-root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface-1: #fcfcfb;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;   /* defence colleges */
+    --series-2: #eb6834;   /* civilian and other */
+    --seq-1: #86b6ef; --seq-2: #2a78d6; --seq-3: #104281;
+    --nodata: #ecebe6;
+    --wash: rgba(42,120,214,0.08);
+    --focus: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface-1: #1a1a19;
+      --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5; --series-2: #d95926;
+      --seq-1: #256abf; --seq-2: #5598e7; --seq-3: #9ec5f4;
+      --nodata: #262624; --wash: rgba(57,135,229,0.14); --focus: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface-1: #1a1a19;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926;
+    --seq-1: #256abf; --seq-2: #5598e7; --seq-3: #9ec5f4;
+    --nodata: #262624; --wash: rgba(57,135,229,0.14); --focus: #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .viz-root { background: var(--page); color: var(--text-primary); min-height: 100vh; line-height: 1.45; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 48px; }
+  a { color: inherit; text-underline-offset: 2px; }
+  a:hover { color: var(--series-1); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  h1 { font-size: 28px; font-weight: 650; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { color: var(--text-secondary); max-width: 760px; margin: 0; font-size: 15px; }
+  .meta { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
+  .iconbtn { border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+             border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .iconbtn:hover { color: var(--text-primary); }
+
+  /* filters: one row above everything they scope */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 24px 0 16px; }
+  .filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--text-muted); }
+  .filters select, .filters input { font: inherit; font-size: 14px; color: var(--text-primary); background: var(--surface-1);
+             border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+  .filters input[type="search"] { width: 200px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 16px; min-height: 0; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);
+          background: var(--surface-1); border: 1px solid var(--border); border-radius: 999px; padding: 3px 4px 3px 10px; }
+  .chip button { border: 0; background: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0 6px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .tile .label { font-size: 13px; color: var(--text-secondary); }
+  .tile .value { font-size: 30px; font-weight: 600; margin-top: 2px; }
+  .tile .sub { font-size: 12px; color: var(--text-muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 12px; margin: 0; min-width: 0; }
+  .card.wide { grid-column: 1 / -1; }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .card h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .card .cap { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+  .toggle { border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 12px; cursor: pointer; padding: 2px 0; white-space: nowrap; }
+  .toggle:hover { color: var(--text-primary); text-decoration: underline; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text-secondary); margin: 4px 0 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { fill: var(--text-muted); font-size: 11px; font-family: inherit; }
+  svg .lbl { fill: var(--text-secondary); font-size: 12px; }
+  svg .val { fill: var(--text-primary); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .grid-line { stroke: var(--grid); stroke-width: 1; }
+  .base-line { stroke: var(--axis); stroke-width: 1; }
+  .mark { cursor: pointer; transition: opacity .12s; }
+  .mark:hover, .mark:focus { opacity: .8; outline: none; }
+  .mark.dim { opacity: .35; }
+  .country { stroke: var(--surface-1); stroke-width: .6; }
+  .country.has { cursor: pointer; }
+  .country.has:hover, .country.has:focus { stroke: var(--text-primary); stroke-width: 1.2; outline: none; }
+  .country.sel { stroke: var(--text-primary); stroke-width: 1.6; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--axis); padding: 8px 8px; white-space: nowrap; }
+  td { border-bottom: 1px solid var(--grid); padding: 8px 8px; vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .mini-table { margin-top: 6px; max-height: 320px; overflow: auto; }
+  tbody tr.row { cursor: pointer; }
+  tbody tr.row:hover { background: var(--wash); }
+  tr.detail td { background: var(--page); color: var(--text-secondary); font-size: 13px; padding: 12px 14px 14px; }
+  tr.detail dl { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; margin: 0; }
+  tr.detail dt { color: var(--text-muted); }
+  tr.detail dd { margin: 0; color: var(--text-primary); }
+  .tag { display: inline-block; font-size: 11px; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; margin: 0 4px 3px 0; white-space: nowrap; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .records-scroll { overflow-x: auto; }
+  #records { min-width: 760px; }
+  .empty { color: var(--text-muted); font-size: 14px; padding: 24px 0; text-align: center; }
+
+  .tooltip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-1); color: var(--text-primary);
+             border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 280px;
+             box-shadow: 0 4px 16px rgba(0,0,0,.12); opacity: 0; transition: opacity .08s; }
+  .tooltip .tv { font-size: 15px; font-weight: 600; }
+  .tooltip .tl { color: var(--text-secondary); }
+  .tooltip .tk { display: inline-block; width: 12px; height: 2px; margin-right: 6px; vertical-align: 3px; }
+
+  .notice { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px; color: var(--text-secondary); }
+  footer { margin-top: 32px; color: var(--text-secondary); font-size: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  footer h3 { font-size: 13px; color: var(--text-primary); margin: 0 0 6px; }
+  footer p { margin: 0 0 8px; }
+
+  @media (max-width: 860px) {
+    .tiles { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr; }
+    h1 { font-size: 23px; }
+    .filters input[type="search"] { width: 100%; }
+    .filters label.grow { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="viz-root">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Learning from Rwanda</h1>
+      <p class="lede">A documented, source-linked record of delegations that travel to Rwanda to learn from its
+        institutions and programmes: study tours, study visits, benchmarking visits and peer-learning missions.</p>
+      <p class="meta" id="meta">Loading data…</p>
+    </div>
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch colour theme">Dark mode</button>
+  </header>
+
+  <div id="app" hidden>
+    <div class="filters" role="search" aria-label="Filter visits">
+      <label>From <select id="fFrom"></select></label>
+      <label>To <select id="fTo"></select></label>
+      <label>Delegation type <select id="fType"></select></label>
+      <label>Theme <select id="fTheme"></select></label>
+      <label>Rwanda Cooperation <select id="fRci">
+        <option value="">Any</option><option value="explicit">Named in a source</option><option value="not_mentioned">Not mentioned</option>
+      </select></label>
+      <label class="grow">Search <input id="fSearch" type="search" placeholder="Country, institution, host…"></label>
+      <button class="iconbtn" id="resetBtn" type="button">Reset</button>
+    </div>
+    <div class="chips" id="chips" aria-live="polite"></div>
+
+    <section class="tiles" aria-label="Summary">
+      <div class="tile"><div class="label">Visits recorded</div><div class="value" id="tVisits">–</div><div class="sub" id="tVisitsSub"></div></div>
+      <div class="tile"><div class="label">Sending countries</div><div class="value" id="tCountries">–</div><div class="sub" id="tCountriesSub"></div></div>
+      <div class="tile"><div class="label">Rwanda Cooperation named</div><div class="value" id="tRci">–</div><div class="sub" id="tRciSub"></div></div>
+      <div class="tile"><div class="label">Sources linked</div><div class="value" id="tSources">–</div><div class="sub" id="tSourcesSub"></div></div>
+    </section>
+
+    <div class="grid">
+      <figure class="card wide" id="cardMap">
+        <div class="card-head">
+          <div><h2>Where delegations came from</h2><p class="cap">Visits by sending country. Select a country to filter.</p></div>
+          <button class="toggle" data-table="map" type="button">Show table</button>
+        </div>
+        <div class="legend" id="mapLegend"></div>
+        <div id="map"></div>
+        <div class="mini-table" id="mapTable" hidden></div>
+      </figure>
+
+      <figure class="card wide" id="cardYear">
+        <div class="card-head">
+          <div><h2>Visits by year</h2><p class="cap">By the year the visit began.</p></div>
+          <button class="toggle" data-table="year" type="button">Show table</button>
+        </div>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--series-1)"></i>Defence colleges</span>
+          <span><i class="sw" style="background:var(--series-2)"></i>Civilian and other delegations</span>
+        </div>
+        <div id="year"></div>
+        <div class="mini-table" id="yearTable" hidden></div>
+      </figure>
+
+      <figure class="card" id="cardTheme">
+        <div class="card-head">
+          <div><h2>What delegations came to learn</h2><p class="cap">Visits per theme (a visit can have several). Select a bar to filter.</p></div>
+          <button class="toggle" data-table="theme" type="button">Show table</button>
+        </div>
+        <div id="theme"></div>
+        <div class="mini-table" id="themeTable" hidden></div>
+      </figure>
+
+      <figure class="card" id="cardHost">
+        <div class="card-head">
+          <div><h2>Rwandan institutions visited</h2><p class="cap">Visits per host institution, top 12.</p></div>
+          <button class="toggle" data-table="host" type="button">Show table</button>
+        </div>
+        <div id="host"></div>
+        <div class="mini-table" id="hostTable" hidden></div>
+      </figure>
+
+      <section class="card wide" aria-labelledby="recordsTitle">
+        <div class="card-head">
+          <div><h2 id="recordsTitle">Records</h2><p class="cap" id="recordsCap">Select a row for details and sources.</p></div>
+          <a class="toggle" href="data/visits.csv" download>Download CSV</a>
+        </div>
+        <div class="records-scroll"><table id="records"></table></div>
+      </section>
+    </div>
+
+    <footer>
+      <div>
+        <h3>About the data</h3>
+        <p>Each record is one delegation's visit, compiled from published news reports, government releases and
+          programme documents, with every source linked. Article texts are not redistributed.</p>
+        <p>Definitions and coding rules: <a href="https://github.com/Zhijun1933/rwanda-peer-learning-visits/blob/main/docs/codebook.md">codebook</a>. Data and code:
+          <a id="repoLink" href="https://github.com/Zhijun1933/rwanda-peer-learning-visits">GitHub repository</a>.</p>
+      </div>
+      <div>
+        <h3>Reading it carefully</h3>
+        <p>Coverage reflects what is reported. The Ministry of Defence publishes study tours systematically, so
+          defence-college visits are likely over-represented relative to civilian ones. "Not mentioned" for
+          Rwanda Cooperation means no source names it, not that it was uninvolved. Records marked
+          <em>snippet only</em> await a full-text check.</p>
+        <p>Data: CC BY 4.0. Code: MIT. Maintained by Zhijun He.</p>
+      </div>
+    </footer>
+  </div>
+
+  <div class="notice" id="loadError" hidden></div>
+</div>
+<div class="tooltip" id="tip" role="status" aria-live="polite"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  const ISO_NUM = {"ABW":"533","AFG":"004","AGO":"024","AIA":"660","ALA":"248","ALB":"008","AND":"020","ARE":"784","ARG":"032","ARM":"051","ASM":"016","ATA":"010","ATF":"260","ATG":"028","AUS":"036","AUT":"040","AZE":"031","BDI":"108","BEL":"056","BEN":"204","BES":"535","BFA":"854","BGD":"050","BGR":"100","BHR":"048","BHS":"044","BIH":"070","BLM":"652","BLR":"112","BLZ":"084","BMU":"060","BOL":"068","BRA":"076","BRB":"052","BRN":"096","BTN":"064","BVT":"074","BWA":"072","CAF":"140","CAN":"124","CCK":"166","CHE":"756","CHL":"152","CHN":"156","CIV":"384","CMR":"120","COD":"180","COG":"178","COK":"184","COL":"170","COM":"174","CPV":"132","CRI":"188","CUB":"192","CUW":"531","CXR":"162","CYM":"136","CYP":"196","CZE":"203","DEU":"276","DJI":"262","DMA":"212","DNK":"208","DOM":"214","DZA":"012","ECU":"218","EGY":"818","ERI":"232","ESH":"732","ESP":"724","EST":"233","ETH":"231","FIN":"246","FJI":"242","FLK":"238","FRA":"250","FRO":"234","FSM":"583","GAB":"266","GBR":"826","GEO":"268","GGY":"831","GHA":"288","GIB":"292","GIN":"324","GLP":"312","GMB":"270","GNB":"624","GNQ":"226","GRC":"300","GRD":"308","GRL":"304","GTM":"320","GUF":"254","GUM":"316","GUY":"328","HKG":"344","HMD":"334","HND":"340","HRV":"191","HTI":"332","HUN":"348","IDN":"360","IMN":"833","IND":"356","IOT":"086","IRL":"372","IRN":"364","IRQ":"368","ISL":"352","ISR":"376","ITA":"380","JAM":"388","JEY":"832","JOR":"400","JPN":"392","KAZ":"398","KEN":"404","KGZ":"417","KHM":"116","KIR":"296","KNA":"659","KOR":"410","KWT":"414","LAO":"418","LBN":"422","LBR":"430","LBY":"434","LCA":"662","LIE":"438","LKA":"144","LSO":"426","LTU":"440","LUX":"442","LVA":"428","MAC":"446","MAF":"663","MAR":"504","MCO":"492","MDA":"498","MDG":"450","MDV":"462","MEX":"484","MHL":"584","MKD":"807","MLI":"466","MLT":"470","MMR":"104","MNE":"499","MNG":"496","MNP":"580","MOZ":"508","MRT":"478","MSR":"500","MTQ":"474","MUS":"480","MWI":"454","MYS":"458","MYT":"175","NAM":"516","NCL":"540","NER":"562","NFK":"574","NGA":"566","NIC":"558","NIU":"570","NLD":"528","NOR":"578","NPL":"524","NRU":"520","NZL":"554","OMN":"512","PAK":"586","PAN":"591","PCN":"612","PER":"604","PHL":"608","PLW":"585","PNG":"598","POL":"616","PRI":"630","PRK":"408","PRT":"620","PRY":"600","PSE":"275","PYF":"258","QAT":"634","REU":"638","ROU":"642","RUS":"643","RWA":"646","SAU":"682","SDN":"729","SEN":"686","SGP":"702","SGS":"239","SHN":"654","SJM":"744","SLB":"090","SLE":"694","SLV":"222","SMR":"674","SOM":"706","SPM":"666","SRB":"688","SSD":"728","STP":"678","SUR":"740","SVK":"703","SVN":"705","SWE":"752","SWZ":"748","SXM":"534","SYC":"690","SYR":"760","TCA":"796","TCD":"148","TGO":"768","THA":"764","TJK":"762","TKL":"772","TKM":"795","TLS":"626","TON":"776","TTO":"780","TUN":"788","TUR":"792","TUV":"798","TWN":"158","TZA":"834","UGA":"800","UKR":"804","UMI":"581","URY":"858","USA":"840","UZB":"860","VAT":"336","VCT":"670","VEN":"862","VGB":"092","VIR":"850","VNM":"704","VUT":"548","WLF":"876","WSM":"882","YEM":"887","ZAF":"710","ZMB":"894","ZWE":"716"};
+  const WORLD_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+  const THEME_LABEL = {
+    governance_accountability: "Governance & accountability", public_service_reform: "Public service reform",
+    decentralization_local_govt: "Decentralisation & local government", finance_pfm: "Public finance & revenue",
+    social_protection: "Social protection", health: "Health", education: "Education", human_capital: "Human capital",
+    digital_govt_ict: "Digital government & ICT", justice: "Justice", peace_reconciliation: "Peace & reconciliation",
+    security_defence: "Security & defence", economy_investment: "Economy & investment", agriculture: "Agriculture",
+    environment_urban: "Environment & urban", tourism: "Tourism", aviation_transport: "Aviation & transport",
+    foreign_policy: "Foreign policy", national_identity_unity: "National identity & unity", leadership: "Leadership",
+    youth: "Youth", gender: "Gender"
+  };
+  const TYPE_LABEL = {
+    national_govt: "National government", subnational_govt: "Subnational government", parliament: "Parliament",
+    military_education: "Defence college", security_service: "Security service", leadership_training: "Leadership programme",
+    intergovernmental: "Intergovernmental body", ngo: "NGO", think_tank_academic: "Think tank / academic",
+    private_sector: "Private sector", unclear: "Unclear"
+  };
+  const VERIFIED_LABEL = { snippet_only: "Snippet only", full_text_checked: "Full text checked", double_coded: "Double coded" };
+
+  const $ = (id) => document.getElementById(id);
+  const split = (s) => (s || "").split(";").map(x => x.trim()).filter(Boolean);
+  const isDefence = (v) => v.entity_type === "military_education";
+  const yearOf = (v) => +v.start_date.slice(0, 4);
+  const el = (tag, attrs, text) => {
+    const n = document.createElement(tag);
+    if (attrs) for (const [k, val] of Object.entries(attrs)) n.setAttribute(k, val);
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const svgEl = (tag, attrs) => {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    if (attrs) for (const [k, val] of Object.entries(attrs)) n.setAttribute(k, val);
+    return n;
+  };
+  const fmtDate = (v) => {
+    const fmt = (d) => {
+      if (!d) return "";
+      const p = d.split("-");
+      const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1];
+      return p.length === 3 ? `${+p[2]} ${m} ${p[0]}` : `${m} ${p[0]}`;
+    };
+    const a = fmt(v.start_date), b = fmt(v.end_date);
+    return (b ? `${a} – ${b}` : a) + (v.date_precision === "approx" ? " (approx.)" : "");
+  };
+
+  /* ---------------- theme toggle ---------------- */
+  const root = document.documentElement;
+  const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const effectiveDark = () => root.dataset.theme ? root.dataset.theme === "dark" : sysDark.matches;
+  const syncThemeBtn = () => { $("themeBtn").textContent = effectiveDark() ? "Light mode" : "Dark mode"; };
+  try { const t = localStorage.getItem("plv-theme"); if (t) root.dataset.theme = t; } catch (e) {}
+  syncThemeBtn();
+  $("themeBtn").addEventListener("click", () => {
+    root.dataset.theme = effectiveDark() ? "light" : "dark";
+    try { localStorage.setItem("plv-theme", root.dataset.theme); } catch (e) {}
+    syncThemeBtn();
+  });
+  sysDark.addEventListener("change", syncThemeBtn);
+
+  /* ---------------- tooltip ---------------- */
+  const tip = $("tip");
+  function showTip(evt, value, label, extra, keyColor) {
+    tip.replaceChildren();
+    const v = el("div", { class: "tv" });
+    if (keyColor) v.appendChild(el("i", { class: "tk", style: `background:${keyColor}` }));
+    v.appendChild(document.createTextNode(value));
+    tip.appendChild(v);
+    tip.appendChild(el("div", { class: "tl" }, label));
+    if (extra) tip.appendChild(el("div", { class: "tl", style: "margin-top:4px;color:var(--text-muted)" }, extra));
+    let x, y;
+    if (evt.clientX != null && evt.type !== "focus") { x = evt.clientX; y = evt.clientY; }
+    else { const r = evt.target.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; }
+    tip.style.opacity = 1;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x + 12)) + "px";
+    tip.style.top = Math.max(8, y - h - 12) + "px";
+  }
+  const hideTip = () => { tip.style.opacity = 0; };
+  function bindTip(node, fn) {
+    node.addEventListener("pointermove", (e) => fn(e));
+    node.addEventListener("focus", (e) => fn(e));
+    node.addEventListener("pointerleave", hideTip);
+    node.addEventListener("blur", hideTip);
+  }
+
+  /* ---------------- state ---------------- */
+  let VISITS = [], SOURCES = {}, WORLD = null;
+  const state = { from: null, to: null, type: "", theme: "", rci: "", search: "", country: "" };
+
+  function filtered() {
+    const q = state.search.toLowerCase();
+    return VISITS.filter(v => {
+      const y = yearOf(v);
+      if (state.from && y < state.from) return false;
+      if (state.to && y > state.to) return false;
+      if (state.type === "_defence" && !isDefence(v)) return false;
+      if (state.type === "_civilian" && isDefence(v)) return false;
+      if (state.type && !state.type.startsWith("_") && v.entity_type !== state.type) return false;
+      if (state.theme && !split(v.themes).includes(state.theme)) return false;
+      if (state.rci && v.rci_involvement !== state.rci) return false;
+      if (state.country && v.visiting_country_iso3 !== state.country) return false;
+      if (q) {
+        const hay = [v.visiting_country, v.visiting_entity, v.lead, v.rwandan_hosts, v.summary, v.co_facilitator, v.themes]
+          .join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  /* ---------------- controls ---------------- */
+  function initControls() {
+    const years = [...new Set(VISITS.map(yearOf))].sort();
+    const ymin = years[0], ymax = years[years.length - 1];
+    for (let y = ymin; y <= ymax; y++) {
+      $("fFrom").appendChild(el("option", { value: y }, y));
+      $("fTo").appendChild(el("option", { value: y }, y));
+    }
+    $("fFrom").value = ymin; $("fTo").value = ymax;
+    state.from = ymin; state.to = ymax;
+
+    const typeSel = $("fType");
+    typeSel.appendChild(el("option", { value: "" }, "All"));
+    typeSel.appendChild(el("option", { value: "_civilian" }, "Civilian and other"));
+    typeSel.appendChild(el("option", { value: "_defence" }, "Defence colleges"));
+    const types = [...new Set(VISITS.map(v => v.entity_type))].filter(t => t !== "military_education")
+      .sort((a, b) => (TYPE_LABEL[a] || a).localeCompare(TYPE_LABEL[b] || b));
+    const og = el("optgroup", { label: "Specific type" });
+    types.forEach(t => og.appendChild(el("option", { value: t }, TYPE_LABEL[t] || t)));
+    typeSel.appendChild(og);
+
+    const themeSel = $("fTheme");
+    themeSel.appendChild(el("option", { value: "" }, "All"));
+    const themes = [...new Set(VISITS.flatMap(v => split(v.themes)))].sort((a, b) => (THEME_LABEL[a] || a).localeCompare(THEME_LABEL[b] || b));
+    themes.forEach(t => themeSel.appendChild(el("option", { value: t }, THEME_LABEL[t] || t)));
+
+    const bind = (id, key, num) => $(id).addEventListener(id === "fSearch" ? "input" : "change", (e) => {
+      state[key] = num ? +e.target.value : e.target.value;
+      if (key === "from" && state.from > state.to) { state.to = state.from; $("fTo").value = state.to; }
+      if (key === "to" && state.to < state.from) { state.from = state.to; $("fFrom").value = state.from; }
+      render();
+    });
+    bind("fFrom", "from", true); bind("fTo", "to", true); bind("fType", "type"); bind("fTheme", "theme");
+    bind("fRci", "rci"); bind("fSearch", "search");
+    $("resetBtn").addEventListener("click", () => {
+      Object.assign(state, { from: ymin, to: ymax, type: "", theme: "", rci: "", search: "", country: "" });
+      $("fFrom").value = ymin; $("fTo").value = ymax;
+      ["fType", "fTheme", "fRci", "fSearch"].forEach(id => { $(id).value = ""; });
+      render();
+    });
+
+    document.querySelectorAll(".toggle[data-table]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const box = $(btn.dataset.table + "Table");
+        box.hidden = !box.hidden;
+        btn.textContent = box.hidden ? "Show table" : "Hide table";
+      });
+    });
+    window.addEventListener("resize", debounce(render, 150));
+  }
+  function debounce(fn, ms) { let t; return () => { clearTimeout(t); t = setTimeout(fn, ms); }; }
+
+  function renderChips() {
+    const box = $("chips"); box.replaceChildren();
+    const add = (text, clear) => {
+      const c = el("span", { class: "chip" }, text);
+      const b = el("button", { type: "button", "aria-label": `Remove filter ${text}` }, "×");
+      b.addEventListener("click", () => { clear(); render(); });
+      c.appendChild(b); box.appendChild(c);
+    };
+    if (state.country) {
+      const name = (VISITS.find(v => v.visiting_country_iso3 === state.country) || {}).visiting_country || state.country;
+      add(`Country: ${name}`, () => { state.country = ""; });
+    }
+    if (state.theme) add(`Theme: ${THEME_LABEL[state.theme] || state.theme}`, () => { state.theme = ""; $("fTheme").value = ""; });
+  }
+
+  /* ---------------- tiles ---------------- */
+  function renderTiles(rows) {
+    const countries = new Set(rows.map(v => v.visiting_country_iso3).filter(Boolean));
+    const srcIds = new Set(rows.flatMap(v => split(v.source_ids)));
+    const rci = rows.filter(v => v.rci_involvement === "explicit").length;
+    const defence = rows.filter(isDefence).length;
+    $("tVisits").textContent = rows.length;
+    $("tVisitsSub").textContent = rows.length ? `${defence} by defence colleges` : "";
+    $("tCountries").textContent = countries.size;
+    const igo = rows.filter(v => !v.visiting_country_iso3).length;
+    $("tCountriesSub").textContent = igo ? `plus ${igo} intergovernmental` : "";
+    $("tRci").textContent = rci;
+    $("tRciSub").textContent = rows.length ? `${Math.round(100 * rci / rows.length)}% of visits shown` : "";
+    $("tSources").textContent = srcIds.size;
+    const checked = rows.filter(v => v.verified !== "snippet_only").length;
+    $("tSourcesSub").textContent = `${checked} of ${rows.length} visits full-text checked`;
+  }
+
+  /* ---------------- mini tables ---------------- */
+  function miniTable(boxId, headers, data) {
+    const box = $(boxId); box.replaceChildren();
+    const t = el("table"); const thead = el("thead"); const tr = el("tr");
+    headers.forEach((h, i) => tr.appendChild(el("th", i > 0 ? { class: "num" } : null, h)));
+    thead.appendChild(tr); t.appendChild(thead);
+    const tb = el("tbody");
+    data.forEach(r => { const row = el("tr"); r.forEach((c, i) => row.appendChild(el("td", i > 0 ? { class: "num" } : null, c))); tb.appendChild(row); });
+    t.appendChild(tb); box.appendChild(t);
+  }
+
+  /* ---------------- map ---------------- */
+  function seqColor(n) {
+    if (!n) return "var(--nodata)";
+    return n >= 3 ? "var(--seq-3)" : n === 2 ? "var(--seq-2)" : "var(--seq-1)";
+  }
+  function renderMap(rows) {
+    const box = $("map"); box.replaceChildren();
+    const counts = d3.rollup(rows.filter(v => v.visiting_country_iso3), g => g, v => v.visiting_country_iso3);
+    const lg = $("mapLegend"); lg.replaceChildren();
+    [["1 visit", 1], ["2 visits", 2], ["3 or more", 3], ["None recorded", 0]].forEach(([t, n]) => {
+      const s = el("span"); s.appendChild(el("i", { class: "sw", style: `background:${seqColor(n)};${n ? "" : "outline:1px solid var(--border)"}` }));
+      s.appendChild(document.createTextNode(t)); lg.appendChild(s);
+    });
+    const rw = el("span"); rw.appendChild(el("i", { class: "sw", style: "background:var(--text-primary)" }));
+    rw.appendChild(document.createTextNode("Rwanda (host)")); lg.appendChild(rw);
+    const tableRows = [...counts].map(([iso, g]) => [g[0].visiting_country, String(g.length)])
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    miniTable("mapTable", ["Country", "Visits"], tableRows);
+    if (!WORLD) { box.appendChild(el("p", { class: "empty" }, "Map unavailable offline; see the table.")); return; }
+
+    const width = box.clientWidth || 900, height = Math.round(width * 0.46);
+    const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img",
+      "aria-label": `World map of sending countries; ${counts.size} countries shown` });
+    const features = topojson.feature(WORLD, WORLD.objects.countries).features
+      .filter(f => f.id !== "010"); // drop Antarctica
+    const proj = d3.geoNaturalEarth1().fitExtent([[4, 4], [width - 4, height - 4]], { type: "FeatureCollection", features });
+    const path = d3.geoPath(proj);
+    const numToIso = {}; for (const [iso, num] of Object.entries(ISO_NUM)) numToIso[num] = iso;
+    features.forEach(f => {
+      const iso = numToIso[f.id];
+      const g = iso ? counts.get(iso) : null;
+      const isRwanda = iso === "RWA";
+      const p = svgEl("path", { d: path(f), class: "country" + (g ? " has" : "") + (state.country === iso ? " sel" : ""),
+        fill: isRwanda ? "var(--text-primary)" : seqColor(g ? g.length : 0) });
+      if (g) {
+        p.setAttribute("tabindex", "0");
+        p.setAttribute("role", "button");
+        p.setAttribute("aria-label", `${g[0].visiting_country}: ${g.length} visit${g.length > 1 ? "s" : ""}`);
+        bindTip(p, (e) => showTip(e, `${g.length} visit${g.length > 1 ? "s" : ""}`, g[0].visiting_country,
+          [...new Set(g.map(v => v.visiting_entity))].slice(0, 3).join(" · ")));
+        const pick = () => { state.country = state.country === iso ? "" : iso; hideTip(); render(); };
+        p.addEventListener("click", pick);
+        p.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      } else if (isRwanda) {
+        bindTip(p, (e) => showTip(e, "Rwanda", "Host country"));
+      }
+      svg.appendChild(p);
+    });
+    box.appendChild(svg);
+  }
+
+  /* ---------------- stacked columns by year ---------------- */
+  function renderYear(rows) {
+    const box = $("year"); box.replaceChildren();
+    const ys = VISITS.map(yearOf); const y0 = Math.max(state.from || d3.min(ys), d3.min(ys)), y1 = Math.min(state.to || d3.max(ys), d3.max(ys));
+    const years = d3.range(y0, y1 + 1);
+    const data = years.map(y => {
+      const g = rows.filter(v => yearOf(v) === y);
+      return { y, def: g.filter(isDefence).length, civ: g.filter(v => !isDefence(v)).length };
+    });
+    miniTable("yearTable", ["Year", "Defence colleges", "Civilian and other", "Total"],
+      data.map(d => [String(d.y), String(d.def), String(d.civ), String(d.def + d.civ)]));
+    const width = box.clientWidth || 900, height = 220, m = { t: 18, r: 8, b: 26, l: 28 };
+    const maxV = Math.max(1, d3.max(data, d => d.def + d.civ));
+    const x = d3.scaleBand().domain(years).range([m.l, width - m.r]).padding(0.35);
+    const yS = d3.scaleLinear().domain([0, maxV]).nice().range([height - m.b, m.t]);
+    const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "Stacked columns of visits per year" });
+    yS.ticks(Math.min(maxV, 5)).filter(Number.isInteger).forEach(t => {
+      svg.appendChild(svgEl("line", { x1: m.l, x2: width - m.r, y1: yS(t), y2: yS(t), class: t === 0 ? "base-line" : "grid-line" }));
+      const tx = svgEl("text", { x: m.l - 8, y: yS(t) + 4, "text-anchor": "end" }); tx.textContent = t; svg.appendChild(tx);
+    });
+    const bw = Math.min(24, x.bandwidth());
+    data.forEach(d => {
+      const cx = x(d.y) + x.bandwidth() / 2 - bw / 2;
+      const segs = [["def", d.def, "var(--series-1)", "Defence colleges"], ["civ", d.civ, "var(--series-2)", "Civilian and other"]];
+      let base = yS(0);
+      const live = segs.filter(s => s[1] > 0);
+      live.forEach((s, i) => {
+        const h = yS(0) - yS(s[1]);
+        const gap = i > 0 ? 2 : 0;
+        const top = base - h;
+        const isTop = i === live.length - 1;
+        const r = isTop ? Math.min(4, h - gap) : 0;
+        const p = svgEl("path", { d: roundedTop(cx, top, bw, h - gap, r), fill: s[2], class: "mark", tabindex: "0",
+          "aria-label": `${d.y}: ${s[1]} ${s[3]}` });
+        bindTip(p, (e) => showTip(e, `${s[1]} visit${s[1] > 1 ? "s" : ""}`, `${s[3]}, ${d.y}`, `${d.def + d.civ} in total`, s[2]));
+        p.addEventListener("click", () => { state.from = state.to = d.y; $("fFrom").value = d.y; $("fTo").value = d.y; hideTip(); render(); });
+        svg.appendChild(p);
+        base = top;
+      });
+      const total = d.def + d.civ;
+      if (total) { const t = svgEl("text", { x: cx + bw / 2, y: yS(total) - 5, "text-anchor": "middle", class: "val" }); t.textContent = total; svg.appendChild(t); }
+      const lx = svgEl("text", { x: cx + bw / 2, y: height - 8, "text-anchor": "middle" });
+      lx.textContent = x.step() < 38 ? "’" + String(d.y).slice(2) : d.y; svg.appendChild(lx);
+    });
+    box.appendChild(svg);
+  }
+  function roundedTop(x, y, w, h, r) {
+    if (h <= 0) return "";
+    r = Math.max(0, Math.min(r, w / 2, h));
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  }
+  function roundedRight(x, y, w, h, r) {
+    if (w <= 0) return "";
+    r = Math.max(0, Math.min(r, h / 2, w));
+    return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+  }
+
+  /* ---------------- horizontal bars ---------------- */
+  function renderHBars(boxId, tableId, items, opts) {
+    const box = $(boxId); box.replaceChildren();
+    miniTable(tableId, [opts.colName, "Visits"], items.map(d => [d.label, String(d.n)]));
+    if (!items.length) { box.appendChild(el("p", { class: "empty" }, "No visits match the filters.")); return; }
+    const width = box.clientWidth || 500, rowH = 26, labelW = Math.min(220, width * 0.5), m = { t: 4, r: 30 };
+    const height = items.length * rowH + m.t + 4;
+    const maxV = d3.max(items, d => d.n);
+    const x = d3.scaleLinear().domain([0, maxV]).range([0, width - labelW - m.r - 8]);
+    const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": opts.aria });
+    svg.appendChild(svgEl("line", { x1: labelW, x2: labelW, y1: m.t, y2: height - 4, class: "base-line" }));
+    items.forEach((d, i) => {
+      const yy = m.t + i * rowH;
+      const lt = svgEl("text", { x: labelW - 8, y: yy + rowH / 2 + 4, "text-anchor": "end", class: "lbl" });
+      const maxChars = Math.max(8, Math.floor((labelW - 12) / 6.4));
+      lt.textContent = d.label.length > maxChars ? d.label.slice(0, maxChars - 1) + "…" : d.label;
+      svg.appendChild(lt);
+      const bh = 12, w = Math.max(2, x(d.n));
+      const active = opts.active && opts.active === d.key;
+      const dim = opts.active && !active;
+      const p = svgEl("path", { d: roundedRight(labelW + 1, yy + (rowH - bh) / 2, w, bh, 4), fill: "var(--series-1)",
+        class: "mark" + (dim ? " dim" : ""), tabindex: opts.onPick ? "0" : "-1", "aria-label": `${d.label}: ${d.n}` });
+      // hit target larger than the bar
+      const hit = svgEl("rect", { x: 0, y: yy, width: width, height: rowH, fill: "transparent", class: opts.onPick ? "mark" : "" });
+      [hit, p].forEach(n => {
+        bindTip(n, (e) => showTip(e, `${d.n} visit${d.n > 1 ? "s" : ""}`, d.label, opts.extra ? opts.extra(d) : null));
+        if (opts.onPick) {
+          n.addEventListener("click", () => { hideTip(); opts.onPick(d.key); });
+          n.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); hideTip(); opts.onPick(d.key); } });
+        }
+      });
+      svg.appendChild(hit); svg.appendChild(p);
+      const vt = svgEl("text", { x: labelW + w + 6, y: yy + rowH / 2 + 4, class: "val" }); vt.textContent = d.n; svg.appendChild(vt);
+    });
+    box.appendChild(svg);
+  }
+  function countBy(rows, field, labelMap) {
+    const m = new Map();
+    rows.forEach(v => split(v[field]).forEach(k => m.set(k, (m.get(k) || 0) + 1)));
+    return [...m].map(([key, n]) => ({ key, n, label: labelMap ? (labelMap[key] || key) : key }))
+      .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label));
+  }
+
+  /* ---------------- records table ---------------- */
+  function renderRecords(rows) {
+    const t = $("records"); t.replaceChildren();
+    $("recordsCap").textContent = `${rows.length} of ${VISITS.length} visits shown. Select a row for details and sources.`;
+    if (!rows.length) { const r = el("tr"); r.appendChild(el("td", { class: "empty" }, "No visits match the filters.")); t.appendChild(r); return; }
+    const thead = el("thead"); const hr = el("tr");
+    ["Dates", "From", "Delegation", "Themes", "Rwanda Cooperation"].forEach(h => hr.appendChild(el("th", null, h)));
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = el("tbody");
+    [...rows].sort((a, b) => b.start_date.localeCompare(a.start_date)).forEach(v => {
+      const tr = el("tr", { class: "row", tabindex: "0", "aria-expanded": "false" });
+      tr.appendChild(el("td", { style: "white-space:nowrap" }, fmtDate(v)));
+      tr.appendChild(el("td", null, v.visiting_country || "Intergovernmental"));
+      const dcell = el("td");
+      dcell.appendChild(el("i", { class: "dot", style: `background:${isDefence(v) ? "var(--series-1)" : "var(--series-2)"}` }));
+      dcell.appendChild(document.createTextNode(v.visiting_entity));
+      dcell.appendChild(el("div", { style: "color:var(--text-muted);font-size:12px" }, TYPE_LABEL[v.entity_type] || v.entity_type));
+      tr.appendChild(dcell);
+      const th = el("td"); split(v.themes).slice(0, 3).forEach(k => th.appendChild(el("span", { class: "tag" }, THEME_LABEL[k] || k)));
+      if (split(v.themes).length > 3) th.appendChild(el("span", { class: "tag" }, `+${split(v.themes).length - 3}`));
+      tr.appendChild(th);
+      tr.appendChild(el("td", null, v.rci_involvement === "explicit" ? "Named" : "Not mentioned"));
+      const det = el("tr", { class: "detail", hidden: "" });
+      const dc = el("td", { colspan: "5" });
+      const dl = el("dl");
+      const item = (k, val) => { if (!val) return; dl.appendChild(el("dt", null, k)); const dd = el("dd"); if (val instanceof Node) dd.appendChild(val); else dd.textContent = val; dl.appendChild(dd); };
+      item("Summary", v.summary);
+      item("Lead", v.lead);
+      item("Delegation size", v.delegation_size);
+      item("Rwandan hosts", split(v.rwandan_hosts).join(" · "));
+      item("Home-Grown Solutions", split(v.hgs_mentioned).join(" · "));
+      item("Co-facilitator", v.co_facilitator);
+      item("Dates", v.date_note ? `${fmtDate(v)}. ${v.date_note}` : fmtDate(v));
+      const srcBox = el("div");
+      split(v.source_ids).forEach(sid => {
+        const s = SOURCES[sid]; if (!s) return;
+        const line = el("div");
+        const a = el("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, s.title || s.url);
+        line.appendChild(a);
+        line.appendChild(el("span", { style: "color:var(--text-muted)" }, ` · ${s.outlet}${s.pub_date ? ", " + s.pub_date : ""}`));
+        srcBox.appendChild(line);
+      });
+      item("Sources", srcBox);
+      item("Notes", v.notes);
+      item("Verification", VERIFIED_LABEL[v.verified] || v.verified);
+      item("Record", v.visit_id);
+      dc.appendChild(dl); det.appendChild(dc);
+      const toggle = () => { det.hidden = !det.hidden; tr.setAttribute("aria-expanded", String(!det.hidden)); };
+      tr.addEventListener("click", toggle);
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      tb.appendChild(tr); tb.appendChild(det);
+    });
+    t.appendChild(tb);
+  }
+
+  /* ---------------- render all ---------------- */
+  function render() {
+    const rows = filtered();
+    renderChips();
+    renderTiles(rows);
+    renderMap(rows);
+    renderYear(rows);
+    renderHBars("theme", "themeTable", countBy(rows, "themes", THEME_LABEL), {
+      colName: "Theme", aria: "Bar chart of visits per theme", active: state.theme,
+      onPick: (k) => { state.theme = state.theme === k ? "" : k; $("fTheme").value = state.theme; render(); }
+    });
+    renderHBars("host", "hostTable", countBy(rows, "rwandan_hosts").slice(0, 12), {
+      colName: "Institution", aria: "Bar chart of visits per Rwandan host institution"
+    });
+    renderRecords(rows);
+  }
+
+  /* ---------------- load ---------------- */
+  async function load() {
+    try {
+      const [vText, sText] = await Promise.all([
+        fetch("data/visits.csv", { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+        fetch("data/sources.csv", { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      ]);
+      VISITS = d3.csvParse(vText).filter(v => v.visit_id && v.start_date);
+      d3.csvParse(sText).forEach(s => { SOURCES[s.source_id] = s; });
+    } catch (e) {
+      $("meta").textContent = "";
+      const n = $("loadError"); n.hidden = false;
+      n.textContent = "The data files could not be loaded. If you opened this page from your computer, serve the folder " +
+        "instead (for example `python -m http.server`) or view it on GitHub Pages.";
+      return;
+    }
+    try { WORLD = await fetch(WORLD_URL).then(r => r.json()); } catch (e) { WORLD = null; }
+    const latest = VISITS.map(v => v.start_date).sort().pop();
+    const srcN = Object.keys(SOURCES).length;
+    $("meta").textContent = `${VISITS.length} visits · ${srcN} sources · latest visit ${latest.slice(0, 7)} · version 0.1`;
+    $("app").hidden = false;
+    initControls();
+    render();
+  }
+  load();
+})();
+</script>
+</body>
+</html>

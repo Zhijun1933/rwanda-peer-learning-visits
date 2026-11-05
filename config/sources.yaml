@@ -1,0 +1,82 @@
+# Crawler configuration. Edit freely; every run reads this file.
+
+user_agent: "rwanda-peer-learning-tracker/0.1 (academic research; see project README)"
+
+# Seconds between requests to the same domain. A domain's robots.txt
+# Crawl-delay is used instead when it is longer.
+min_delay_seconds: 5
+timeout_seconds: 30
+
+# Domains never fetched, whatever robots.txt says. RCI's own site disallows
+# crawling, and the project relies on a good working relationship with RCI.
+do_not_crawl:
+  - rci.gov.rw
+  - cooperation.rw
+  - facebook.com
+  - x.com
+  - twitter.com
+  - instagram.com
+  - linkedin.com
+
+# Sitemap discovery: domains whose sitemaps are walked. Only URLs whose path
+# matches one of `slug_keywords` are kept as candidates.
+sitemap_domains:
+  - www.newtimes.co.rw
+  - www.ktpress.rw
+  - umunota.com
+  - en.igihe.com
+  - www.mod.gov.rw
+  - www.rgb.rw
+  - www.minaloc.gov.rw
+  - www.mifotra.gov.rw
+  - www.mininter.gov.rw
+  - www.minecofin.gov.rw
+  - www.mineduc.gov.rw
+  - www.moh.gov.rw
+  - www.oag.gov.rw
+  - www.kigalicity.gov.rw
+  - www.parliament.gov.rw
+  - www.primature.gov.rw
+  - www.minaffet.gov.rw
+  - rdb.rw
+  - www.mmi.gov.rw
+
+slug_keywords:
+  - study-tour
+  - study-visit
+  - studytour
+  - benchmark
+  - learning-visit
+  - learning-mission
+  - exposure-visit
+  - peer-learning
+  - delegation
+  - experience-sharing
+  - learn-from-rwanda
+  - rwanda-cooperation
+
+# GDELT DOC 2.0 API queries (the API covers roughly the last three months, so
+# use it for ongoing monitoring; use the GKG BigQuery template for history).
+gdelt_queries:
+  - '"Rwanda Cooperation"'
+  - '"study tour" Rwanda delegation'
+  - '"study visit" Rwanda delegation'
+  - '"benchmarking visit" Rwanda'
+  - '"learn from Rwanda"'
+
+# Article relevance: an article is a candidate when it matches at least one
+# visit term AND mentions Rwanda.
+visit_terms:
+  - study tour
+  - study visit
+  - benchmarking
+  - learning visit
+  - learning mission
+  - exposure visit
+  - peer learning
+  - peer-learning
+  - experience sharing
+  - knowledge exchange
+  - learn from rwanda
+  - visite d'étude
+  - voyage d'étude

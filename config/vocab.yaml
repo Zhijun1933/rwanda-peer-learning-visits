@@ -1,0 +1,80 @@
+# Controlled vocabularies for data/visits.csv.
+# Multi-valued fields use ";" as separator. See docs/codebook.md for definitions.
+
+entity_type:
+  - national_govt        # ministry, agency, cabinet-level delegation of a national government
+  - subnational_govt     # state, provincial, county, city or municipal government
+  - parliament           # members or staff of a national or subnational legislature
+  - military_education   # staff/command colleges, national defence colleges
+  - security_service     # police, corrections, intelligence, border services
+  - leadership_training  # public leadership academies and fellowship programmes
+  - intergovernmental    # UN agencies, regional bodies, multilateral banks
+  - ngo                  # non-governmental and faith-based organisations
+  - think_tank_academic  # think tanks, universities, research institutes
+  - private_sector       # firms and business associations
+  - unclear
+
+themes:
+  - governance_accountability
+  - public_service_reform
+  - decentralization_local_govt
+  - finance_pfm
+  - social_protection
+  - health
+  - education
+  - human_capital
+  - digital_govt_ict
+  - justice
+  - peace_reconciliation
+  - security_defence
+  - economy_investment
+  - agriculture
+  - environment_urban
+  - tourism
+  - aviation_transport
+  - foreign_policy
+  - national_identity_unity
+  - leadership
+  - youth
+  - gender
+
+# Rwanda's officially designated Home-Grown Solutions (HGS) and closely related
+# programmes. Record only when a source names the programme explicitly.
+hgs:
+  - Umuganda
+  - Imihigo
+  - Girinka
+  - Ubudehe
+  - Abunzi
+  - Gacaca
+  - Itorero
+  - Umushyikirano
+  - Umwiherero
+  - Umugoroba w'Ababyeyi
+  - Ndi Umunyarwanda
+  - Mutuelle de Sante
+  - VUP
+  - IDP model village
+
+rci_involvement:
+  - explicit       # a source names Rwanda Cooperation / RCI as host, facilitator or stop
+  - not_mentioned  # no source mentions RCI (does NOT mean RCI was uninvolved)
+
+evidence:
+  - report          # news or institutional report that the visit took place
+  - programme       # published itinerary or programme only
+  - social_post     # social media post (or a mirror of one)
+
+date_precision:
+  - day
+  - month
+  - approx
+
+source_type:
+  - rwandan_media
+  - rwandan_govt
+  - visiting_country_media
+  - visiting_institution
+  - intl_org
+  - international_media
+  - social_media_mirror

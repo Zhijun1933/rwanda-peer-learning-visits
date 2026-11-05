@@ -1,0 +1,23 @@
+# Local pipeline outputs: contain article texts, never commit
+data/tracker.db
+data/tracker.db-*
+data/raw/
+data/text/
+data/review/
+private/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Exports from BigQuery and scratch files
+gkg*.csv
+gkg.sql
+*.log
+.DS_Store

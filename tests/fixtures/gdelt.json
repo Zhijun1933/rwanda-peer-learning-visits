@@ -1,0 +1,7 @@
+{"articles": [
+  {"url": "https://news.example.rw/article/101/news/malawian-officials-in-rwanda-for-study-tour",
+   "title": "Malawian officials in Rwanda for study tour", "seendate": "20260311T090000Z",
+   "domain": "news.example.rw", "language": "English", "sourcecountry": "Rwanda"},
+  {"url": "https://www.rci.gov.rw/news/some-post", "title": "Blocked by policy",
+   "seendate": "20260312T090000Z", "domain": "rci.gov.rw", "language": "English", "sourcecountry": "Rwanda"}
+]}
