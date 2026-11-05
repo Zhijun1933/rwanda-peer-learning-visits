@@ -128,6 +128,16 @@
   .fw-fam li { margin: 3px 0; }
   .fw-fam li b { color: var(--text-primary); font-weight: 600; margin-right: 4px; }
   .sub-h { font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px;
+           border: 1px solid var(--series-2); color: var(--series-2); margin-left: 8px; vertical-align: 2px; }
+  .pf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; margin: 4px 0 16px; }
+  .pf { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--page); }
+  .pf .pf-n { font-size: 11px; color: var(--text-muted); margin: 0 0 2px; }
+  .pf h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+  .pf .pf-stat { font-size: 22px; font-weight: 650; line-height: 1.1; color: var(--series-1); }
+  .pf .pf-sl { font-size: 11px; color: var(--text-muted); margin: 2px 0 8px; }
+  .pf p.pf-t { font-size: 13px; color: var(--text-secondary); margin: 0; }
+  .pf-note { font-size: 12px; color: var(--text-muted); margin: 8px 0 0; }
   #review { min-width: 760px; }
   .tooltip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-1); color: var(--text-primary);
              border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 280px;
@@ -254,12 +264,33 @@
               Full definitions: <a href="https://github.com/Zhijun1933/rwanda-peer-learning-visits/blob/main/docs/analytic_codebook.md">analytic codebook</a>.</p></div>
           <button class="toggle" data-table="coding" type="button">Show table</button>
         </div>
-        <p class="fw-q" id="fwQuestion">Research question: how does hosting delegations from African states that come to study Rwanda as a
-          development model shape how Rwandan officials claim sovereignty for their post-conflict state, at home and abroad?</p>
+        <p class="fw-q" id="fwQuestion">Research question: how does Rwanda use study visits to project an image of <b>sovereign policy
+          autonomy</b> and to establish its <b>status as a development leader</b> among African states? Autonomy is measured against
+          donors, status against African peers; each code belongs to one of these dimensions, or to the evidence that cuts against them.</p>
         <div class="fw-grid" id="fwFamilies"></div>
         <h3 class="sub-h">Coded passages by code</h3>
         <div id="coding"></div>
         <div class="mini-table" id="codingTable" hidden></div>
+      </section>
+
+      <section class="card wide" id="cardPilot" aria-labelledby="pilotTitle" hidden>
+        <div class="card-head">
+          <div><h2 id="pilotTitle">First coding pass: five things to test<span class="badge">Exploratory</span></h2>
+            <p class="cap" id="pilotCap">A first, machine-coded pass over a stratified sample of reports. Not yet checked by a human coder:
+              these are leads for the next round, not findings. The filters above do not apply to this fixed sample.</p></div>
+          <button class="toggle" data-table="pilot" type="button">Show table</button>
+        </div>
+        <div class="pf-grid" id="pilotFindings"></div>
+        <h3 class="sub-h">Who voices which claim</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--series-1)"></i>Status</span>
+          <span><i class="sw" style="background:var(--series-2)"></i>Autonomy</span>
+          <span><i class="sw" style="background:var(--seq-1)"></i>Limits to either</span>
+          <span><i class="sw" style="background:var(--nodata)"></i>Legitimation and staging</span>
+        </div>
+        <div id="pilot"></div>
+        <div class="mini-table" id="pilotTable" hidden></div>
+        <p class="pf-note" id="pilotNote"></p>
       </section>
 
       <section class="card wide" aria-labelledby="recordsTitle">
@@ -767,7 +798,59 @@
   }
 
   /* ---------------- analytical framework ---------------- */
-  let CODES = [], CODING = [];
+  let CODES = [], CODING = [], PILOT = null;
+  function renderPilot() {
+    if (!PILOT) return;
+    $("cardPilot").hidden = false;
+    const grid = $("pilotFindings"); grid.replaceChildren();
+    PILOT.findings.forEach(f => {
+      const c = el("div", { class: "pf" });
+      c.appendChild(el("p", { class: "pf-n" }, `Lead ${f.id}`));
+      c.appendChild(el("h4", null, f.title));
+      c.appendChild(el("div", { class: "pf-stat" }, f.stat));
+      c.appendChild(el("p", { class: "pf-sl" }, f.stat_label));
+      c.appendChild(el("p", { class: "pf-t" }, f.text));
+      grid.appendChild(c);
+    });
+    const groups = [
+      { key: "status", label: "Status", cols: ["status"], color: "var(--series-1)" },
+      { key: "autonomy", label: "Autonomy", cols: ["autonomy"], color: "var(--series-2)" },
+      { key: "limits", label: "Limits to either", cols: ["status_limits", "autonomy_limits"], color: "var(--seq-1)" },
+      { key: "other", label: "Legitimation and staging", cols: ["legitimation", "apparatus"], color: "var(--nodata)" }];
+    const rows = Object.entries(PILOT.dimension_by_speaker).map(([who, d]) => ({
+      who, parts: groups.map(g => ({ ...g, n: g.cols.reduce((s, c) => s + (d[c] || 0), 0) })) }));
+    rows.forEach(r => { r.total = d3.sum(r.parts, p => p.n); });
+    miniTable("pilotTable", ["Speaker", ...groups.map(g => g.label), "Total"],
+      rows.map(r => [r.who, ...r.parts.map(p => String(p.n)), String(r.total)]));
+    const box = $("pilot"); box.replaceChildren();
+    const width = box.clientWidth || 600, rowH = 30, labelW = 96, m = { t: 4, r: 40 };
+    const height = rows.length * rowH + m.t + 4;
+    const x = d3.scaleLinear().domain([0, d3.max(rows, r => r.total)]).range([0, width - labelW - m.r]);
+    const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img",
+      "aria-label": "Stacked bars of coded claims by speaker: status, autonomy, limits, legitimation and staging" });
+    rows.forEach((r, i) => {
+      const yy = m.t + i * rowH;
+      const lt = svgEl("text", { x: labelW - 8, y: yy + rowH / 2 + 4, "text-anchor": "end", class: "lbl" });
+      lt.textContent = r.who; svg.appendChild(lt);
+      let x0 = labelW;
+      r.parts.forEach(p => {
+        if (!p.n) return;
+        const w = x(p.n);
+        const rect = svgEl("rect", { x: x0, y: yy + 8, width: Math.max(1, w - 1), height: 14, fill: p.color, class: "mark",
+          "aria-label": `${r.who}, ${p.label}: ${p.n}` });
+        bindTip(rect, (e) => showTip(e, `${p.n} code application${p.n > 1 ? "s" : ""}`, `${r.who} · ${p.label}`, null, p.color));
+        svg.appendChild(rect); x0 += w;
+      });
+      const vt = svgEl("text", { x: x0 + 6, y: yy + rowH / 2 + 4, class: "val" }); vt.textContent = r.total; svg.appendChild(vt);
+    });
+    box.appendChild(svg);
+    const sm = PILOT.sample;
+    const note = $("pilotNote"); note.replaceChildren();
+    note.appendChild(document.createTextNode(`${sm.readable} of ${sm.sources} sources readable · ${sm.coded_passages} coded passages · `
+      + `${sm.low_confidence} low-confidence · seeded stratified sample. Coded passages stay private; method, sample and caveats in the `));
+    note.appendChild(el("a", { href: "https://github.com/Zhijun1933/rwanda-peer-learning-visits/blob/main/" + PILOT.report }, "pilot report"));
+    note.appendChild(document.createTextNode("."));
+  }
   function renderFramework() {
     const box = $("fwFamilies"); box.replaceChildren();
     const fams = CODES.filter(c => !c.parent);
@@ -829,9 +912,10 @@
 
   async function loadOptional() {
     const text = (u) => fetch(u, { cache: "no-cache" }).then(r => r.ok ? r.text() : "").catch(() => "");
-    const [codesT, codingT, candT, crawlT, itinT] = await Promise.all([
+    const [codesT, codingT, candT, crawlT, itinT, pilotT] = await Promise.all([
       text("config/analytic_codes.csv"), text("data/coding_summary.csv"), text("data/candidates.csv"), text("data/crawl_status.json"),
-      text("data/itinerary.csv")]);
+      text("data/itinerary.csv"), text("data/pilots/pilot1_summary.json")]);
+    try { PILOT = pilotT ? JSON.parse(pilotT) : null; } catch (e) { PILOT = null; }
     if (itinT) ITIN = d3.csvParse(itinT);
     if (codesT) CODES = d3.csvParse(codesT);
     if (codingT) CODING = d3.csvParse(codingT);
@@ -856,6 +940,7 @@
     });
     renderItin(rows);
     renderCoding(rows);
+    renderPilot();
     renderRecords(rows);
   }
 

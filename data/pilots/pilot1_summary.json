@@ -1,0 +1,151 @@
+{
+ "pilot": "2026-11 round 1",
+ "status": "exploratory: machine-coded, not yet checked by a human coder",
+ "report": "docs/pilots/2026-11-pilot1.md",
+ "sample": {
+  "sources": 26,
+  "readable": 24,
+  "coded_passages": 114,
+  "code_applications": 136,
+  "low_confidence": 39,
+  "languages": {
+   "en": 18,
+   "rw": 7,
+   "fr": 1
+  },
+  "seed": 20261105
+ },
+ "dimension_by_speaker": {
+  "Guest": {
+   "status": 39,
+   "status_limits": 6,
+   "autonomy": 0,
+   "autonomy_limits": 0,
+   "legitimation": 3,
+   "apparatus": 5
+  },
+  "Host": {
+   "status": 6,
+   "status_limits": 0,
+   "autonomy": 1,
+   "autonomy_limits": 0,
+   "legitimation": 5,
+   "apparatus": 8
+  },
+  "Narrator": {
+   "status": 20,
+   "status_limits": 3,
+   "autonomy": 0,
+   "autonomy_limits": 3,
+   "legitimation": 7,
+   "apparatus": 27
+  },
+  "Third party": {
+   "status": 2,
+   "status_limits": 0,
+   "autonomy": 0,
+   "autonomy_limits": 0,
+   "legitimation": 1,
+   "apparatus": 0
+  }
+ },
+ "dimension_by_delegation": {
+  "Civilian and other": {
+   "status": 61,
+   "status_limits": 7,
+   "autonomy": 1,
+   "autonomy_limits": 3,
+   "legitimation": 10,
+   "apparatus": 21
+  },
+  "Defence colleges": {
+   "status": 6,
+   "status_limits": 2,
+   "autonomy": 0,
+   "autonomy_limits": 0,
+   "legitimation": 6,
+   "apparatus": 19
+  }
+ },
+ "dimension_totals": {
+  "status": 67,
+  "status_limits": 9,
+  "autonomy": 1,
+  "autonomy_limits": 3,
+  "legitimation": 16,
+  "apparatus": 40
+ },
+ "never_used": [
+  "A3",
+  "D4"
+ ],
+ "top_cooccurrence": [
+  {
+   "a": "B1",
+   "b": "B4",
+   "docs_both": 10,
+   "jaccard": 0.53
+  },
+  {
+   "a": "B4",
+   "b": "C1",
+   "docs_both": 10,
+   "jaccard": 0.48
+  },
+  {
+   "a": "B4",
+   "b": "D2",
+   "docs_both": 8,
+   "jaccard": 0.47
+  },
+  {
+   "a": "A2",
+   "b": "C1",
+   "docs_both": 7,
+   "jaccard": 0.5
+  },
+  {
+   "a": "C1",
+   "b": "D2",
+   "docs_both": 7,
+   "jaccard": 0.47
+  }
+ ],
+ "findings": [
+  {
+   "id": 1,
+   "title": "Status, not autonomy",
+   "stat": "67 : 1",
+   "stat_label": "status vs autonomy code applications",
+   "text": "Reports of visits carry claims about Rwanda's standing as a model, almost never claims about its policy independence. Home-grown authorship (A3) and rebuttal of outside criticism (D4) did not appear once. Autonomy may be claimed in other genres, such as speeches to donors, or not in visit reporting at all; the next round adds official speeches to tell these apart."
+  },
+  {
+   "id": 2,
+   "title": "Status by proxy",
+   "stat": "39 : 6",
+   "stat_label": "status passages voiced by guests vs Rwandan hosts",
+   "text": "The claim that Rwanda is a model is mostly spoken by visitors. Rwandan hosts more often describe the visit as an 'exchange of experiences'. The host stages the visit; the guest says the words."
+  },
+  {
+   "id": 3,
+   "title": "Defence tours are staged differently",
+   "stat": "6 of 33",
+   "stat_label": "code applications on defence-college tours that are about status (civilian: 61 of 103)",
+   "text": "Military study tours are dominated by itinerary, showcase sites and legitimating narratives (memorial, the RDF's own history), with little language about Rwanda as a model."
+  },
+  {
+   "id": 4,
+   "title": "Who pays disappears",
+   "stat": "Togo, 2013",
+   "stat_label": "same visit, two framings",
+   "text": "The African Development Bank's release names the Bank as facilitator and funder of the Togolese visit; Kigali Today's report of the same visit does not mention it and frames it as Togolese admiration. Evidence that limits autonomy (third-party sponsorship) appeared only outside Rwandan media."
+  },
+  {
+   "id": 5,
+   "title": "Emulation and deference travel together",
+   "stat": "0.53",
+   "stat_label": "Jaccard overlap of B1 (emulation intent) and B4 (status deference) across sources",
+   "text": "Visitors who say Rwanda is exemplary are usually the same ones who say they will take its programmes home. The two codes may work better as a single cluster."
+  }
+ ]
+}
