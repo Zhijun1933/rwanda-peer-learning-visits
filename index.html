@@ -487,7 +487,7 @@
     $("tVisitsSub").textContent = rows.length ? `${defence} by defence colleges` : "";
     $("tCountries").textContent = countries.size;
     const igo = rows.filter(v => !v.visiting_country_iso3).length;
-    $("tCountriesSub").textContent = igo ? `plus ${igo} intergovernmental` : "";
+    $("tCountriesSub").textContent = igo ? `plus ${igo} multinational ${igo === 1 ? "body" : "bodies"}` : "";
     $("tRci").textContent = rci;
     $("tRciSub").textContent = rows.length ? `${Math.round(100 * rci / rows.length)}% of visits shown` : "";
     $("tSources").textContent = srcIds.size;
