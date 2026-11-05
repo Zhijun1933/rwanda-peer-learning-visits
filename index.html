@@ -139,7 +139,7 @@
   table.xt td.rowlab { text-align: left; white-space: nowrap; color: var(--text-primary); padding-right: 10px; }
   table.xt td.tot { color: var(--text-muted); }
   table.xt td.cell { cursor: default; }
-  .cmp-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr 70px; gap: 8px; align-items: center;
+  .cmp-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr 104px; gap: 8px; align-items: center;
              font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid var(--grid); }
   .cmp-row .lab { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cmp-row .sig { color: var(--text-muted); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -153,7 +153,7 @@
   .tool-controls select { max-width: 100%; }
   @media (max-width: 640px) {
     .tool-controls label { flex: 1 1 100%; }
-    .cmp-row { grid-template-columns: 1fr 64px; row-gap: 2px; }
+    .cmp-row { grid-template-columns: 1fr 96px; row-gap: 2px; }
     .cmp-row .lab { grid-column: 1 / -1; }
     .cmp-row.head span:nth-child(2) { grid-column: 1 / 2; }
   }
@@ -316,6 +316,9 @@
           <label><span><i class="sw" style="background:var(--series-1)"></i> Group A</span> <select id="cmpA"></select></label>
           <label><span><i class="sw" style="background:var(--series-2)"></i> Group B</span> <select id="cmpB"></select></label>
           <label>Compare on <select id="cmpOn"></select></label>
+          <label>Multiple-comparison correction <select id="cmpAdj">
+            <option value="holm">Holm (family-wise)</option><option value="bh">Benjamini–Hochberg (false discovery rate)</option><option value="none">None</option>
+          </select></label>
         </div>
         <div id="cmp"></div>
         <p class="tool-note" id="cmpNote"></p>
@@ -1090,6 +1093,21 @@
     for (let x = Math.max(0, r1 + c1 - n); x <= Math.min(r1, c1); x++) { const px = p(x); if (px <= p0 * (1 + 1e-7)) s += px; }
     return Math.min(1, s);
   }
+  // Adjusted p-values over all m tests (same results as statsmodels multipletests "holm" / "fdr_bh").
+  function adjustP(ps, method) {
+    const m = ps.length; if (method === "none" || !m) return ps.slice();
+    const idx = ps.map((p, i) => [p, i]).sort((a, b) => a[0] - b[0]);
+    const out = new Array(m);
+    if (method === "holm") {
+      let run = 0;
+      idx.forEach(([p, i], k) => { run = Math.max(run, Math.min(1, (m - k) * p)); out[i] = run; });
+    } else {
+      let run = 1;
+      for (let k = m - 1; k >= 0; k--) { const [p, i] = idx[k]; run = Math.min(run, Math.min(1, p * m / (k + 1))); out[i] = run; }
+    }
+    return out;
+  }
+  const ADJ_LABEL = { holm: "Holm", bh: "Benjamini–Hochberg", none: "no" };
   function renderCompare(rows) {
     const by = $("cmpBy").value, A = $("cmpA").value, B = $("cmpB").value, on = $("cmpOn").value;
     const box = $("cmp"); box.replaceChildren();
@@ -1100,14 +1118,17 @@
     }
     const va = valuesOf(on, ga).count, vb = valuesOf(on, gb).count;
     const keys = [...new Set([...va.keys(), ...vb.keys()])];
-    const items = keys.map(k => {
+    const adj = $("cmpAdj").value;
+    const all = keys.map(k => {
       const a = va.get(k) || 0, b = vb.get(k) || 0;
       return { k, a, b, pa: a / ga.length, pb: b / gb.length, p: fisher(a, ga.length - a, b, gb.length - b) };
-    }).sort((x, y) => Math.abs(y.pa - y.pb) - Math.abs(x.pa - x.pb) || (y.a + y.b) - (x.a + x.b)).slice(0, 15);
+    });
+    const padj = adjustP(all.map(x => x.p), adj); all.forEach((x, i) => { x.q = padj[i]; });
+    const items = all.sort((x, y) => Math.abs(y.pa - y.pb) - Math.abs(x.pa - x.pb) || (y.a + y.b) - (x.a + x.b)).slice(0, 15);
     const head = el("div", { class: "cmp-row head", style: "border-bottom:1px solid var(--axis);color:var(--text-muted);font-size:11.5px" });
     head.appendChild(el("span", null, DIMS[on].label));
     head.appendChild(el("span", null, `Share of visits · A: ${A} (n = ${ga.length}) · B: ${B} (n = ${gb.length})`));
-    head.appendChild(el("span", { class: "sig" }, "Fisher p"));
+    head.appendChild(el("span", { class: "sig" }, adj === "none" ? "Fisher p" : "p adj. (raw)"));
     box.appendChild(head);
     items.forEach(it => {
       const row = el("div", { class: "cmp-row" });
@@ -1120,11 +1141,17 @@
       };
       mk("a", it.pa, it.a, 1); mk("b2", it.pb, it.b, 11);
       row.appendChild(bars);
-      row.appendChild(el("span", { class: "sig", title: "Two-sided Fisher's exact test" }, (it.p < 0.05 ? "● " : "") + (it.p < 0.001 ? "<0.001" : it.p.toFixed(3))));
+      const f = (x) => x < 0.001 ? "<0.001" : x.toFixed(3);
+      row.appendChild(el("span", { class: "sig", title: `Two-sided Fisher's exact test. Raw p = ${f(it.p)}; ${ADJ_LABEL[adj]} adjusted p = ${f(it.q)} over ${all.length} tests.` },
+        (it.q < 0.05 ? "● " : "") + f(it.q) + (adj === "none" ? "" : ` (${f(it.p)})`)));
       box.appendChild(row);
     });
     const small = Math.min(ga.length, gb.length) < 10;
-    $("cmpNote").textContent = "● p < 0.05 (two-sided Fisher's exact test, not corrected for multiple comparisons). "
+    const nSig = all.filter(x => x.q < 0.05).length, nRaw = all.filter(x => x.p < 0.05).length;
+    $("cmpNote").textContent = (adj === "none"
+      ? `● p < 0.05 (two-sided Fisher's exact test, not corrected: ${all.length} values were tested, so some gaps will look significant by chance). `
+      : `● adjusted p < 0.05: two-sided Fisher's exact test, ${ADJ_LABEL[adj]} correction over all ${all.length} values tested `
+        + `(${nSig} pass after correction, ${nRaw} before). Raw p in brackets. `)
       + "The data come from published reports, so these are differences in what was reported, not necessarily in what happened."
       + (small ? " At least one group has fewer than 10 visits: treat any gap as a lead, not a result." : "");
   }
@@ -1148,7 +1175,7 @@
     };
     syncGroups();
     $("cmpBy").addEventListener("change", () => { syncGroups(); renderCompare(filtered()); });
-    ["cmpA", "cmpB", "cmpOn"].forEach(id => $(id).addEventListener("change", () => renderCompare(filtered())));
+    ["cmpA", "cmpB", "cmpOn", "cmpAdj"].forEach(id => $(id).addEventListener("change", () => renderCompare(filtered())));
     $("dlFiltered").addEventListener("click", () => {
       const rows = filtered();
       const cols = Object.keys(VISITS[0]).filter(k => k !== "region");
