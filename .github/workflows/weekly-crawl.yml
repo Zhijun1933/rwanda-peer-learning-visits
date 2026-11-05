@@ -55,8 +55,9 @@ jobs:
         run: |
           count() { python -c "from tracker import db; print(db.connect().execute('SELECT COUNT(*) FROM articles').fetchone()[0])"; }
           BEFORE=$(count)
-          python -m tracker discover gdelt --days 14
-          python -m tracker discover sitemaps --since "$(date -u -d "$SINCE_DAYS days ago" +%F)" --max-sitemaps "$MAX_SITEMAPS"
+          # each route is independent: one failing source must not stop the others
+          python -m tracker discover gdelt --days 14 || echo "::warning::GDELT discovery failed"
+          python -m tracker discover sitemaps --since "$(date -u -d "$SINCE_DAYS days ago" +%F)" --max-sitemaps "$MAX_SITEMAPS" || echo "::warning::Sitemap discovery failed"
           AFTER=$(count)
           echo "NEW_URLS=$((AFTER - BEFORE))" >> "$GITHUB_ENV"
 

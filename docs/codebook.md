@@ -32,7 +32,7 @@ when their dates do not overlap or their institutions differ.
 | `start_date`, `end_date` | ISO dates (`YYYY-MM-DD`, or `YYYY-MM` when only the month is known) | Leave `end_date` blank if unknown |
 | `date_precision` | `day`, `month` or `approx` | `approx` when dates are inferred from a single meeting or a report date |
 | `date_note` | Free text explaining how dates were derived | Required when `date_precision` is not `day` |
-| `visiting_country_iso3` | ISO 3166-1 alpha-3 code of the sending country | Blank for intergovernmental bodies |
+| `visiting_country_iso3` | ISO 3166-1 alpha-3 code of the sending country | Blank only for multinational bodies (intergovernmental, continental associations) |
 | `visiting_country` | Country name | |
 | `visiting_entity` | Institution(s) the delegation came from, as named in the sources | |
 | `entity_type` | Type of sending institution | Controlled vocabulary |
@@ -47,7 +47,7 @@ when their dates do not overlap or their institutions differ.
 | `summary` | One sentence written by the coder | Original wording only; never copy from a source |
 | `source_ids` | Links to `sources.csv` | `;`-separated |
 | `notes` | Discrepancies between sources, coding decisions | |
-| `verified` | `snippet_only`, `full_text_checked` or `double_coded` | Upgrade as checks are done |
+| `verified` | `snippet_only` (coded from search-result text), `machine_read` (source pages opened and fields extracted by an automated reader), `full_text_checked` (a person read every source), `double_coded` | Upgrade as checks are done |
 
 ### Short names for Rwandan hosts
 

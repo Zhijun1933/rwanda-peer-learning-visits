@@ -12,6 +12,7 @@ Four routes, all of which respect robots.txt and the do-not-crawl list:
 import csv
 import gzip
 import json
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote, urlsplit
@@ -104,7 +105,14 @@ def run_gdelt(conn, fetcher: PoliteFetcher, queries: list[str], days: int = 90,
         w_start = start
         while w_start < end:
             w_end = min(w_start + timedelta(days=window_days), end)
-            resp = fetcher.get(gdelt_url(q, w_start, w_end), check_robots=False)
+            resp = None
+            for attempt in range(3):  # GDELT drops connections under load; back off and retry
+                try:
+                    resp = fetcher.get(gdelt_url(q, w_start, w_end), check_robots=False)
+                    break
+                except Exception as exc:
+                    print(f"  ! GDELT request failed ({exc.__class__.__name__}); retry {attempt + 1}/3")
+                    time.sleep(15 * (attempt + 1))
             if resp is not None and resp.status_code == 200:
                 for art in parse_gdelt(resp.text):
                     url = art.get("url")

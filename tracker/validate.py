@@ -14,7 +14,8 @@ VISIT_COLUMNS = ("visit_id,start_date,end_date,date_precision,date_note,visiting
                  "hgs_mentioned,rwandan_hosts,rci_involvement,co_facilitator,evidence,summary,"
                  "source_ids,notes,verified").split(",")
 SOURCE_COLUMNS = "source_id,url,outlet,source_type,pub_date,title,language,accessed".split(",")
-VERIFIED = {"snippet_only", "full_text_checked", "double_coded"}
+VERIFIED = {"snippet_only", "machine_read", "full_text_checked", "double_coded"}
+MULTINATIONAL_OK = {"intergovernmental", "ngo", "think_tank_academic"}
 ITINERARY_COLUMNS = ["visit_id", "date", "stop", "activity", "source_id"]
 
 
@@ -72,8 +73,8 @@ def validate(data_dir: Path = DATA_DIR) -> list[str]:
         iso = v["visiting_country_iso3"]
         if iso and not pycountry.countries.get(alpha_3=iso):
             errors.append(f"{vid}: unknown ISO3 code '{iso}'")
-        if not iso and v["entity_type"] != "intergovernmental":
-            errors.append(f"{vid}: visiting_country_iso3 required unless entity_type is intergovernmental")
+        if not iso and v["entity_type"] not in MULTINATIONAL_OK:
+            errors.append(f"{vid}: visiting_country_iso3 required unless the delegation is a multinational body")
         if v["entity_type"] not in vocab["entity_type"]:
             errors.append(f"{vid}: unknown entity_type '{v['entity_type']}'")
         if v["delegation_size"] and not v["delegation_size"].isdigit():

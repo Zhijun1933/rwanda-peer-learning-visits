@@ -283,7 +283,7 @@
         <p>Coverage reflects what is reported. The Ministry of Defence publishes study tours systematically, so
           defence-college visits are likely over-represented relative to civilian ones. "Not mentioned" for
           Rwanda Cooperation means no source names it, not that it was uninvolved. Records marked
-          <em>snippet only</em> await a full-text check.</p>
+          <em>snippet only</em> or <em>machine-read</em> await a check by a person.</p>
         <p>Data: CC BY 4.0. Code: MIT. Maintained by Zhijun He.</p>
       </div>
     </footer>
@@ -317,7 +317,7 @@
     intergovernmental: "Intergovernmental body", ngo: "NGO", think_tank_academic: "Think tank / academic",
     private_sector: "Private sector", unclear: "Unclear"
   };
-  const VERIFIED_LABEL = { snippet_only: "Snippet only", full_text_checked: "Full text checked", double_coded: "Double coded" };
+  const VERIFIED_LABEL = { snippet_only: "Snippet only", machine_read: "Machine-read sources, not yet checked by a person", full_text_checked: "Full text checked", double_coded: "Double coded" };
 
   const $ = (id) => document.getElementById(id);
   const split = (s) => (s || "").split(";").map(x => x.trim()).filter(Boolean);
@@ -491,7 +491,7 @@
     $("tRci").textContent = rci;
     $("tRciSub").textContent = rows.length ? `${Math.round(100 * rci / rows.length)}% of visits shown` : "";
     $("tSources").textContent = srcIds.size;
-    const checked = rows.filter(v => v.verified !== "snippet_only").length;
+    const checked = rows.filter(v => v.verified === "full_text_checked" || v.verified === "double_coded").length;
     $("tSourcesSub").textContent = `${checked} of ${rows.length} visits full-text checked`;
   }
 
