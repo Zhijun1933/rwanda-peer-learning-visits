@@ -7,11 +7,11 @@ polite pipeline for finding and coding new reports.
 
 **Interactive dashboard:** https://zhijun1933.github.io/rwanda-peer-learning-visits/
 
-**Status:** second release, November 2026. 108 visits by delegations from
-39 countries and four multinational bodies, 2008–2026, drawn from 129 public
-sources in English (101), Kinyarwanda (20) and French (8). 39 visits predate
+**Status:** second release, November 2026. 121 visits by delegations from
+40 countries and four multinational bodies, 2008–2026, drawn from 153 public
+sources in English (109), Kinyarwanda (36) and French (8). 50 visits predate
 Rwanda Cooperation's October 2018 launch. Three records have been checked
-against the full source text by a human coder; 82 were coded by a machine
+against the full source text by a human coder; 95 were coded by a machine
 reader from the full article (`machine_read`) and 23 from search-result text
 (`snippet_only`). See [Limitations](#limitations).
 
@@ -113,12 +113,13 @@ are published: `python -m tracker export-coding` writes
 ## Limitations
 
 - **Reporting bias.** The Ministry of Defence publishes study tours
-  systematically, so defence-college visits (21 of 108 records) are
+  systematically, so defence-college visits (25 of 121 records) are
   over-represented relative to civilian visits, which are reported unevenly.
 - **"Not mentioned" is not "absent".** `rci_involvement = not_mentioned`
   only means no source names Rwanda Cooperation.
 - **Language and outlets.** Kinyarwanda records all come from Kigali Today's
-  site search, which favours the years it indexes best (2022 onward); French
+  site search for the term *rugendoshuri* (study tour), which has been read in
+  full; French
   records lean on Rwandan and francophone sending-country outlets. Coverage of
   2008–2017 is thinner and rests mostly on English-language press.
 - **Verification.** Seed records were coded from search-result text and
