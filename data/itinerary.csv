@@ -1,0 +1,63 @@
+visit_id,date,stop,activity,source_id
+V002,,MINALOC,briefing,S028
+V002,,MINECOFIN,briefing,S028
+V002,,Rwanda Development Board,briefing,S028
+V002,,Rwanda Governance Board,briefing,S028
+V002,,Zigama CSS,briefing,S028
+V002,,Military Medical Insurance,briefing,S028
+V002,,Rwanda Military Hospital,site_visit,S028
+V005,2022-02-17,Karama IDP Model Village,site_visit,S036
+V005,,Bishenyi waste recycling project,site_visit,S036
+V005,,Kigali Genocide Memorial,memorial,S036
+V005,,RALGA,briefing,S037
+V007,2023-10-02,Ministry of Defence / RDF,briefing,S023
+V007,,Kigali Genocide Memorial,memorial,S023
+V007,,Campaign Against Genocide Museum,memorial,S023
+V007,,Zigama CSS,briefing,S023
+V007,,Military Medical Insurance,briefing,S023
+V007,,Rwanda Military Hospital,site_visit,S023
+V007,,RDF Command and Staff College,site_visit,S023
+V008,,Kigali Genocide Memorial,memorial,S034
+V008,,Campaign Against Genocide Museum,memorial,S034
+V008,,Mbyo Reconciliation Village,site_visit,S034
+V008,,MINIJUST,courtesy_call,S034
+V008,,MININTER,courtesy_call,S034
+V008,,MINUBUMWE,briefing,S034
+V008,,Ministry of Defence / RDF,briefing,S034
+V008,,Rwanda Development Board,briefing,S034
+V008,,Parliament of Rwanda,briefing,S034
+V008,,City of Kigali,briefing,S034
+V009,,Ministry of Defence / RDF,briefing,S025
+V009,,RDF Command and Staff College,site_visit,S025
+V009,,Rwanda Peace Academy,site_visit,S025
+V009,,"Dallaire Institute for Children, Peace and Security",briefing,S025
+V009,,Rwanda Cooperation,briefing,S025
+V009,,Kigali Genocide Memorial,memorial,S025
+V009,,Campaign Against Genocide Museum,memorial,S025
+V012,2024-10-22,Office of the Prime Minister,courtesy_call,S030
+V012,2024-10-23,Rwanda Governance Board,briefing,S031
+V014,,Rwanda Cooperation,briefing,S001
+V014,,Office of the Ombudsman,briefing,S001
+V014,,Rwanda Governance Board,briefing,S001
+V014,,National Bank of Rwanda,briefing,S001
+V016,2025-11-11,Kigali Genocide Memorial,memorial,S003
+V016,,MINECOFIN,briefing,S003
+V016,2025-11-13,MINALOC,briefing,S003
+V016,2025-11-13,District (unspecified),field_visit,S003
+V016,,Rwanda Cooperation,briefing,S003
+V017,2026-02-26,Office of the Auditor General,briefing,S004
+V019,2026-05-12,Ministry of Defence / RDF,briefing,S018
+V019,,Kigali Genocide Memorial,memorial,S018
+V020,2026-06-01,Kigali Genocide Memorial,memorial,S015
+V020,2026-06-01,Campaign Against Genocide Museum,memorial,S015
+V020,2026-06-02,Ministry of Defence / RDF,briefing,S015
+V024,,Rwanda Social Security Board,briefing,S007
+V024,,Rwanda Revenue Authority,briefing,S007
+V024,,Parliament of Rwanda,briefing,S007
+V024,,City of Kigali,briefing,S007
+V024,,African Leadership University,site_visit,S007
+V026,2026-10-18,Rwanda Cooperation,briefing,S005
+V026,,MINALOC,briefing,S005
+V026,,MINECOFIN,briefing,S005
+V026,,Rwanda Revenue Authority,briefing,S006
+V026,2026-10-26,Nyabihu District,field_visit,S006

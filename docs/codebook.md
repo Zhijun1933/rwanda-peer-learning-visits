@@ -60,6 +60,19 @@ Use these forms so hosts can be counted: `Rwanda Cooperation`,
 `Office of the Prime Minister`, `Kigali Genocide Memorial`,
 `Rwanda Peace Academy`, and districts as `<Name> District`.
 
+## itinerary.csv
+
+One row per stop on a visit's programme, recorded only when a source names the
+stop. Used to study which institutions and sites recur across delegations.
+
+| Field | Definition |
+|---|---|
+| `visit_id` | Links to `visits.csv` |
+| `date` | `YYYY-MM-DD` if the source dates the stop, else blank |
+| `stop` | Institution or site, using the short host names above where possible |
+| `activity` | `briefing`, `site_visit`, `memorial`, `courtesy_call`, `field_visit`, `other` |
+| `source_id` | The source that names the stop |
+
 ## sources.csv
 
 | Field | Definition |

@@ -228,6 +228,15 @@
         <div class="mini-table" id="hostTable" hidden></div>
       </figure>
 
+      <figure class="card wide" id="cardItin">
+        <div class="card-head">
+          <div><h2>Stops on documented itineraries</h2><p class="cap" id="itinCap">Visits that included each stop, where a source lists the programme.</p></div>
+          <button class="toggle" data-table="itin" type="button">Show table</button>
+        </div>
+        <div id="itin"></div>
+        <div class="mini-table" id="itinTable" hidden></div>
+      </figure>
+
       <section class="card wide" aria-labelledby="fwTitle">
         <div class="card-head">
           <div><h2 id="fwTitle">Analytical framework</h2>
@@ -704,6 +713,29 @@
   }
 
 
+
+  /* ---------------- itineraries ---------------- */
+  let ITIN = [];
+  const ACT_LABEL = { briefing: "briefing", site_visit: "site visit", memorial: "memorial", courtesy_call: "courtesy call", field_visit: "field visit", other: "other" };
+  function renderItin(rows) {
+    const ids = new Set(rows.map(v => v.visit_id));
+    const scoped = ITIN.filter(r => ids.has(r.visit_id));
+    const withItin = new Set(scoped.map(r => r.visit_id));
+    const memorial = new Set(scoped.filter(r => r.activity === "memorial").map(r => r.visit_id));
+    $("itinCap").textContent = withItin.size
+      ? `${withItin.size} of ${rows.length} visits shown have a documented programme; ${memorial.size} of them include a genocide memorial.`
+      : "No documented programmes among the visits shown.";
+    const by = new Map();
+    scoped.forEach(r => {
+      if (!by.has(r.stop)) by.set(r.stop, { visits: new Set(), acts: new Set() });
+      by.get(r.stop).visits.add(r.visit_id); by.get(r.stop).acts.add(r.activity);
+    });
+    const items = [...by].map(([stop, o]) => ({ key: stop, label: stop, n: o.visits.size, acts: [...o.acts] }))
+      .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label)).slice(0, 15);
+    renderHBars("itin", "itinTable", items, { colName: "Stop", aria: "Bar chart of itinerary stops by number of visits",
+      extra: (d) => d.acts.map(a => ACT_LABEL[a] || a).join(", ") });
+  }
+
   /* ---------------- analytical framework ---------------- */
   let CODES = [], CODING = [];
   function renderFramework() {
@@ -767,8 +799,10 @@
 
   async function loadOptional() {
     const text = (u) => fetch(u, { cache: "no-cache" }).then(r => r.ok ? r.text() : "").catch(() => "");
-    const [codesT, codingT, candT, crawlT] = await Promise.all([
-      text("config/analytic_codes.csv"), text("data/coding_summary.csv"), text("data/candidates.csv"), text("data/crawl_status.json")]);
+    const [codesT, codingT, candT, crawlT, itinT] = await Promise.all([
+      text("config/analytic_codes.csv"), text("data/coding_summary.csv"), text("data/candidates.csv"), text("data/crawl_status.json"),
+      text("data/itinerary.csv")]);
+    if (itinT) ITIN = d3.csvParse(itinT);
     if (codesT) CODES = d3.csvParse(codesT);
     if (codingT) CODING = d3.csvParse(codingT);
     if (candT) CANDIDATES = d3.csvParse(candT);
@@ -789,6 +823,7 @@
     renderHBars("host", "hostTable", countBy(rows, "rwandan_hosts").slice(0, 12), {
       colName: "Institution", aria: "Bar chart of visits per Rwandan host institution"
     });
+    renderItin(rows);
     renderCoding(rows);
     renderRecords(rows);
   }

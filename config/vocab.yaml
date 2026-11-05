@@ -78,3 +78,11 @@ source_type:
   - intl_org
   - international_media
   - social_media_mirror
+
+itinerary_activity:
+  - briefing        # presentation or working session at an institution
+  - site_visit      # visit to a project, facility or showcase site
+  - memorial        # genocide memorial or museum
+  - courtesy_call   # protocol meeting with a minister or senior official
+  - field_visit     # district or community-level visit outside Kigali institutions
+  - other

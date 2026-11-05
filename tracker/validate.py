@@ -15,6 +15,7 @@ VISIT_COLUMNS = ("visit_id,start_date,end_date,date_precision,date_note,visiting
                  "source_ids,notes,verified").split(",")
 SOURCE_COLUMNS = "source_id,url,outlet,source_type,pub_date,title,language,accessed".split(",")
 VERIFIED = {"snippet_only", "full_text_checked", "double_coded"}
+ITINERARY_COLUMNS = ["visit_id", "date", "stop", "activity", "source_id"]
 
 
 def _split(value: str) -> list[str]:
@@ -100,6 +101,26 @@ def validate(data_dir: Path = DATA_DIR) -> list[str]:
             used_sources.add(sid)
             if sid not in source_ids:
                 errors.append(f"{vid}: source '{sid}' not found in sources.csv")
+
+    itin_path = data_dir / "itinerary.csv"
+    if itin_path.exists():
+        with open(itin_path, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            if reader.fieldnames != ITINERARY_COLUMNS:
+                errors.append(f"itinerary.csv: columns must be {ITINERARY_COLUMNS}")
+            for i, row in enumerate(reader, start=2):
+                where = f"itinerary.csv line {i}"
+                if row["visit_id"] not in seen_ids:
+                    errors.append(f"{where}: unknown visit_id '{row['visit_id']}'")
+                if row["date"] and not re.match(r"^\d{4}-\d{2}-\d{2}$", row["date"]):
+                    errors.append(f"{where}: date must be YYYY-MM-DD or blank")
+                if not row["stop"]:
+                    errors.append(f"{where}: stop is required")
+                if row["activity"] not in vocab["itinerary_activity"]:
+                    errors.append(f"{where}: unknown activity '{row['activity']}'")
+                if row["source_id"] not in source_ids:
+                    errors.append(f"{where}: source '{row['source_id']}' not found")
+                used_sources.add(row["source_id"])
 
     for sid in sorted(source_ids - used_sources):
         errors.append(f"{sid}: source not used by any visit")

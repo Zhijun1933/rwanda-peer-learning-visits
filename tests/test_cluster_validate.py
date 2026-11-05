@@ -57,3 +57,15 @@ def test_validator_catches_errors(tmp_path):
     assert "unknown theme 'made_up_theme'" in errors
     assert "unknown ISO3 code 'XXX'" in errors
     assert "source 'S999' not found" in errors
+
+
+def test_validator_checks_itinerary(tmp_path):
+    for name in ("sources.csv", "visits.csv"):
+        shutil.copy(DATA_DIR / name, tmp_path / name)
+    (tmp_path / "itinerary.csv").write_text(
+        "visit_id,date,stop,activity,source_id\n"
+        "V999,2026-01-01,RGB,briefing,S001\n"
+        "V001,,MIFOTRA,lecture,S035\n", encoding="utf-8")
+    errors = " ".join(validate(tmp_path))
+    assert "unknown visit_id 'V999'" in errors
+    assert "unknown activity 'lecture'" in errors
