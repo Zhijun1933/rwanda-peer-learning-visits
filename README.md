@@ -10,10 +10,11 @@ polite pipeline for finding and coding new reports.
 **Status:** second release, November 2026. 121 visits by delegations from
 40 countries and four multinational bodies, 2008–2026, drawn from 153 public
 sources in English (109), Kinyarwanda (36) and French (8). 50 visits predate
-Rwanda Cooperation's October 2018 launch. Three records have been checked
-against the full source text by a human coder; 95 were coded by a machine
-reader from the full article (`machine_read`) and 23 from search-result text
-(`snippet_only`). See [Limitations](#limitations).
+Rwanda Cooperation's October 2018 launch. 105 records have been checked by a
+human coder against every linked source (`full_text_checked`); the remaining
+16, added or given new sources after that check, were coded by a machine
+reader from the full article (`machine_read`) and await review. See
+[Limitations](#limitations).
 
 ## Background
 
@@ -122,11 +123,11 @@ are published: `python -m tracker export-coding` writes
   full; French
   records lean on Rwandan and francophone sending-country outlets. Coverage of
   2008–2017 is thinner and rests mostly on English-language press.
-- **Verification.** Seed records were coded from search-result text and
-  linked pages on 2026-11-04; second-release records were extracted from the
-  full article on 2026-11-05 and are marked `machine_read` until a human coder
-  confirms them. Rows are upgraded
-  to `full_text_checked` as each source is read in full. Known discrepancies
+- **Verification.** Records are first coded from the source text (by hand or
+  by a machine reader, `machine_read`) and are upgraded to `full_text_checked`
+  once a human coder has read every linked source. Records V001–V108 were
+  checked on 2026-11-05; rows that gain a new source afterwards drop back to
+  review until that source is read. No record is yet `double_coded`. Known discrepancies
   between sources are recorded in the `notes` column.
 
 ## Contributing
