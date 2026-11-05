@@ -88,7 +88,10 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "Weekly crawl: update candidate list"
-            git push
+            for i in 1 2 3; do
+              git pull --rebase --autostash && git push && break
+              sleep 10
+            done
           fi
 
       - name: Summary
