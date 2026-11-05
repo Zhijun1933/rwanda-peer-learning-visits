@@ -7,10 +7,13 @@ polite pipeline for finding and coding new reports.
 
 **Interactive dashboard:** https://zhijun1933.github.io/rwanda-peer-learning-visits/
 
-**Status:** seed release, November 2026. 26 visits by delegations from
-19 countries and one intergovernmental body, 2018–2026, drawn from 40 public
-sources. Three records have been checked against the full source text; the
-rest are at `snippet_only` verification (see [Limitations](#limitations)).
+**Status:** second release, November 2026. 108 visits by delegations from
+39 countries and four multinational bodies, 2008–2026, drawn from 129 public
+sources in English (101), Kinyarwanda (20) and French (8). 39 visits predate
+Rwanda Cooperation's October 2018 launch. Three records have been checked
+against the full source text by a human coder; 82 were coded by a machine
+reader from the full article (`machine_read`) and 23 from search-result text
+(`snippet_only`). See [Limitations](#limitations).
 
 ## Background
 
@@ -110,14 +113,18 @@ are published: `python -m tracker export-coding` writes
 ## Limitations
 
 - **Reporting bias.** The Ministry of Defence publishes study tours
-  systematically, so defence-college visits (13 of 26 seed records) are
+  systematically, so defence-college visits (21 of 108 records) are
   over-represented relative to civilian visits, which are reported unevenly.
 - **"Not mentioned" is not "absent".** `rci_involvement = not_mentioned`
   only means no source names Rwanda Cooperation.
-- **Language.** Seed sources are in English. French and Kinyarwanda coverage
-  is a priority for the next release.
+- **Language and outlets.** Kinyarwanda records all come from Kigali Today's
+  site search, which favours the years it indexes best (2022 onward); French
+  records lean on Rwandan and francophone sending-country outlets. Coverage of
+  2008–2017 is thinner and rests mostly on English-language press.
 - **Verification.** Seed records were coded from search-result text and
-  linked pages on 2026-11-04; most are marked `snippet_only`. Rows are upgraded
+  linked pages on 2026-11-04; second-release records were extracted from the
+  full article on 2026-11-05 and are marked `machine_read` until a human coder
+  confirms them. Rows are upgraded
   to `full_text_checked` as each source is read in full. Known discrepancies
   between sources are recorded in the `notes` column.
 
