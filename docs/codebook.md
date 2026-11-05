@@ -33,7 +33,7 @@ when their dates do not overlap or their institutions differ.
 | `date_precision` | `day`, `month` or `approx` | `approx` when dates are inferred from a single meeting or a report date |
 | `date_note` | Free text explaining how dates were derived | Required when `date_precision` is not `day` |
 | `visiting_country_iso3` | ISO 3166-1 alpha-3 code of the sending country | Blank only for multinational bodies (intergovernmental, continental associations) |
-| `visiting_country` | Country name | |
+| `visiting_country` | Plain country name (current name of the sending state) | No qualifiers; put historical names or co-participants in `notes`. Blank for multinational bodies. Region is derived from the ISO3 code (see below), not coded separately |
 | `visiting_entity` | Institution(s) the delegation came from, as named in the sources | |
 | `entity_type` | Type of sending institution | Controlled vocabulary |
 | `delegation_size` | Number of delegates, if stated | Integer only. Explain partial counts in `notes` |
@@ -100,3 +100,13 @@ them locally under `data/raw/` and `data/text/`, which `.gitignore` excludes.
    for the row. A sample of rows is double-coded by a second coder to report
    agreement.
 5. Run `python -m tracker validate` before every commit.
+
+## Regions
+
+Sending regions are derived from `visiting_country_iso3` using
+[`config/regions.csv`](../config/regions.csv), which follows the African
+Union's five regions (North, East, Central, West and Southern Africa).
+Burundi is therefore in Central Africa and Sudan and South Sudan in East
+Africa, whatever their other memberships (EAC, SADC, IGAD). Countries outside
+the continent are grouped as "Outside Africa", and records with a blank ISO3
+code (multinational bodies) as "Multinational".
