@@ -120,6 +120,15 @@
   #records { min-width: 760px; }
   .empty { color: var(--text-muted); font-size: 14px; padding: 24px 0; text-align: center; }
 
+  .fw-q { font-size: 14px; color: var(--text-secondary); margin: 0 0 12px; max-width: 900px; }
+  .fw-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+  .fw-fam { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--page); }
+  .fw-fam h4 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+  .fw-fam ul { margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--text-secondary); }
+  .fw-fam li { margin: 3px 0; }
+  .fw-fam li b { color: var(--text-primary); font-weight: 600; margin-right: 4px; }
+  .sub-h { font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
+  #review { min-width: 760px; }
   .tooltip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-1); color: var(--text-primary);
              border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 280px;
              box-shadow: 0 4px 16px rgba(0,0,0,.12); opacity: 0; transition: opacity .08s; }
@@ -135,6 +144,7 @@
   @media (max-width: 860px) {
     .tiles { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .grid { grid-template-columns: 1fr; }
+    .fw-grid { grid-template-columns: 1fr 1fr; }
     footer { grid-template-columns: 1fr; }
     h1 { font-size: 23px; }
     .filters input[type="search"] { width: 100%; }
@@ -218,12 +228,36 @@
         <div class="mini-table" id="hostTable" hidden></div>
       </figure>
 
+      <section class="card wide" aria-labelledby="fwTitle">
+        <div class="card-head">
+          <div><h2 id="fwTitle">Analytical framework</h2>
+            <p class="cap">Codes applied to the full texts of reports. Only counts are published; coded passages stay with the researcher.
+              Full definitions: <a href="https://github.com/Zhijun1933/rwanda-peer-learning-visits/blob/main/docs/analytic_codebook.md">analytic codebook</a>.</p></div>
+          <button class="toggle" data-table="coding" type="button">Show table</button>
+        </div>
+        <p class="fw-q" id="fwQuestion">Research question: how does hosting delegations from African states that come to study Rwanda as a
+          development model shape how Rwandan officials claim sovereignty for their post-conflict state, at home and abroad?</p>
+        <div class="fw-grid" id="fwFamilies"></div>
+        <h3 class="sub-h">Coded passages by code</h3>
+        <div id="coding"></div>
+        <div class="mini-table" id="codingTable" hidden></div>
+      </section>
+
       <section class="card wide" aria-labelledby="recordsTitle">
         <div class="card-head">
           <div><h2 id="recordsTitle">Records</h2><p class="cap" id="recordsCap">Select a row for details and sources.</p></div>
           <a class="toggle" href="data/visits.csv" download>Download CSV</a>
         </div>
         <div class="records-scroll"><table id="records"></table></div>
+      </section>
+
+      <section class="card wide" aria-labelledby="revTitle">
+        <div class="card-head">
+          <div><h2 id="revTitle">Awaiting review</h2>
+            <p class="cap" id="revCap">Reports found by the weekly crawler that have not yet been coded into records.</p></div>
+          <a class="toggle" href="data/candidates.csv" download>Download list</a>
+        </div>
+        <div class="records-scroll"><table id="review"></table></div>
       </section>
     </div>
 
@@ -669,6 +703,78 @@
     t.appendChild(tb);
   }
 
+
+  /* ---------------- analytical framework ---------------- */
+  let CODES = [], CODING = [];
+  function renderFramework() {
+    const box = $("fwFamilies"); box.replaceChildren();
+    const fams = CODES.filter(c => !c.parent);
+    fams.forEach(f => {
+      const card = el("div", { class: "fw-fam" });
+      card.appendChild(el("h4", null, `${f.code}. ${f.name}`));
+      const ul = el("ul");
+      CODES.filter(c => c.parent === f.code).forEach(c => {
+        const li = el("li"); li.appendChild(el("b", null, c.code)); li.appendChild(document.createTextNode(c.name));
+        li.title = c.definition || ""; ul.appendChild(li);
+      });
+      card.appendChild(ul); box.appendChild(card);
+    });
+  }
+  function renderCoding(rows) {
+    const box = $("coding");
+    const ids = new Set(rows.map(v => v.visit_id));
+    const scoped = CODING.filter(r => !r.visit_id || ids.has(r.visit_id));
+    if (!CODING.length) {
+      box.replaceChildren(el("p", { class: "empty" }, "Coding has not started yet. Counts will appear here as reports are coded."));
+      miniTable("codingTable", ["Code", "Passages"], []);
+      return;
+    }
+    const by = new Map();
+    scoped.forEach(r => by.set(r.code, (by.get(r.code) || 0) + (+r.segments || 0)));
+    const nameOf = Object.fromEntries(CODES.map(c => [c.code, c.name]));
+    const items = [...by].map(([key, n]) => ({ key, n, label: `${key} ${nameOf[key] || ""}`.trim() }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+    renderHBars("coding", "codingTable", items, { colName: "Code", aria: "Bar chart of coded passages per analytic code" });
+  }
+
+  /* ---------------- awaiting review ---------------- */
+  let CANDIDATES = [], CRAWL = null;
+  function renderReview() {
+    const t = $("review"); t.replaceChildren();
+    const fresh = CANDIDATES.filter(c => !c.existing_visit_id);
+    const when = CRAWL && CRAWL.last_run ? CRAWL.last_run.slice(0, 10) : null;
+    $("revCap").textContent = when
+      ? `Last crawl ${when}: ${fresh.length} possible new visit${fresh.length === 1 ? "" : "s"} and ${CANDIDATES.length - fresh.length} report${CANDIDATES.length - fresh.length === 1 ? "" : "s"} on visits already recorded. Not yet verified.`
+      : "The weekly crawler has not run yet. Its findings will be listed here before they are coded into records.";
+    if (!CANDIDATES.length) return;
+    const thead = el("thead"); const hr = el("tr");
+    ["Country", "Approx. date", "Matches record", "Reports", "Headline"].forEach(h => hr.appendChild(el("th", h === "Reports" ? { class: "num" } : null, h)));
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = el("tbody");
+    [...CANDIDATES].sort((a, b) => (b.start_date || "").localeCompare(a.start_date || "")).slice(0, 25).forEach(c => {
+      const tr = el("tr");
+      tr.appendChild(el("td", null, c.visiting_country_iso3 || "?"));
+      tr.appendChild(el("td", { style: "white-space:nowrap" }, c.start_date || "–"));
+      tr.appendChild(el("td", null, c.existing_visit_id || "New"));
+      tr.appendChild(el("td", { class: "num" }, c.n_articles || "1"));
+      const td = el("td");
+      const urls = (c.urls || "").split(" | "), titles = (c.titles || "").split(" | ");
+      if (urls[0]) td.appendChild(el("a", { href: urls[0], target: "_blank", rel: "noopener noreferrer" }, titles[0] || urls[0]));
+      tr.appendChild(td); tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  async function loadOptional() {
+    const text = (u) => fetch(u, { cache: "no-cache" }).then(r => r.ok ? r.text() : "").catch(() => "");
+    const [codesT, codingT, candT, crawlT] = await Promise.all([
+      text("config/analytic_codes.csv"), text("data/coding_summary.csv"), text("data/candidates.csv"), text("data/crawl_status.json")]);
+    if (codesT) CODES = d3.csvParse(codesT);
+    if (codingT) CODING = d3.csvParse(codingT);
+    if (candT) CANDIDATES = d3.csvParse(candT);
+    try { CRAWL = crawlT ? JSON.parse(crawlT) : null; } catch (e) { CRAWL = null; }
+  }
+
   /* ---------------- render all ---------------- */
   function render() {
     const rows = filtered();
@@ -683,6 +789,7 @@
     renderHBars("host", "hostTable", countBy(rows, "rwandan_hosts").slice(0, 12), {
       colName: "Institution", aria: "Bar chart of visits per Rwandan host institution"
     });
+    renderCoding(rows);
     renderRecords(rows);
   }
 
@@ -703,11 +810,14 @@
       return;
     }
     try { WORLD = await fetch(WORLD_URL).then(r => r.json()); } catch (e) { WORLD = null; }
+    await loadOptional();
     const latest = VISITS.map(v => v.start_date).sort().pop();
     const srcN = Object.keys(SOURCES).length;
     $("meta").textContent = `${VISITS.length} visits · ${srcN} sources · latest visit ${latest.slice(0, 7)} · version 0.1`;
     $("app").hidden = false;
     initControls();
+    renderFramework();
+    renderReview();
     render();
   }
   load();

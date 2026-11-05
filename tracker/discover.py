@@ -163,13 +163,15 @@ def add_urls_from_file(conn, path: str, via: str = "manual") -> int:
     return added
 
 
-def run_sitemaps(conn, since: str | None = None, domains: list[str] | None = None) -> int:
+def run_sitemaps(conn, since: str | None = None, domains: list[str] | None = None,
+                 max_sitemaps: int = 500) -> int:
     cfg = config.sources()
     fetcher = PoliteFetcher(cfg)
     total = 0
     for domain in domains or cfg["sitemap_domains"]:
         print(f"- sitemaps: {domain}")
-        n = walk_sitemaps(conn, fetcher, domain, cfg["slug_keywords"], since=since)
+        n = walk_sitemaps(conn, fetcher, domain, cfg["slug_keywords"], since=since,
+                          max_sitemaps=max_sitemaps)
         conn.commit()
         print(f"  {n} new candidate URLs")
         total += n

@@ -74,6 +74,29 @@ python -m tracker validate                # run before every commit
 Pipeline outputs (`data/tracker.db`, `data/raw/`, `data/text/`,
 `data/review/`) are excluded from git.
 
+## Weekly crawl
+
+A GitHub Actions workflow (`.github/workflows/weekly-crawl.yml`) runs every
+Monday at 07:17 UTC. It discovers new reports (GDELT for the last two weeks,
+sitemaps for the last five), fetches them politely, pre-fills fields, and
+commits a review list to `data/candidates.csv` with `data/crawl_status.json`.
+The dashboard shows this list under *Awaiting review*. Nothing enters
+`data/visits.csv` until a coder has checked it.
+
+Article texts live only in a private Actions cache, never in the repository.
+To run it now or backfill history, open **Actions → Weekly crawl → Run
+workflow** and set `since_days` (for example 3000 for a one-off backfill).
+
+## Analytical framework
+
+`docs/analytic_codebook.md` sets out the research question and the codes
+applied to the full texts (how Rwanda presents itself, how visitors frame
+Rwanda, the exhibition apparatus, sovereignty claims).
+`config/analytic_codes.csv` holds the code list (load it with
+`python -m tracker load-codes config/analytic_codes.csv`). Only aggregate counts
+are published: `python -m tracker export-coding` writes
+`data/coding_summary.csv`, which the dashboard charts.
+
 ## Crawling policy
 
 - Every request checks `robots.txt` and honours `Crawl-delay`; the default

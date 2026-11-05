@@ -15,7 +15,8 @@ RELEVANCE_THRESHOLD = 0.5
 def cmd_discover(args):
     conn = db.connect()
     if args.route == "sitemaps":
-        n = discover.run_sitemaps(conn, since=args.since, domains=args.domain or None)
+        n = discover.run_sitemaps(conn, since=args.since, domains=args.domain or None,
+                                  max_sitemaps=args.max_sitemaps)
     elif args.route == "gdelt":
         cfg = config.sources()
         n = discover.run_gdelt(conn, PoliteFetcher(cfg), cfg["gdelt_queries"], days=args.days)
@@ -123,6 +124,18 @@ def cmd_load_codes(args):
     print(f"{len(rows)} codes loaded.")
 
 
+def cmd_export_candidates(args):
+    from .export import export_candidates
+    n = export_candidates(db.connect(), new_urls=args.new_urls)
+    print(f"{n} candidate groups written to data/candidates.csv")
+
+
+def cmd_export_coding(args):
+    from .export import export_coding
+    n = export_coding(db.connect())
+    print(f"{n} rows written to data/coding_summary.csv")
+
+
 def cmd_status(args):
     conn = db.connect()
     for row in conn.execute("SELECT status, COUNT(*) n FROM articles GROUP BY status ORDER BY n DESC"):
@@ -145,6 +158,7 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--since", help="sitemaps: only URLs last modified on/after YYYY-MM-DD")
     d.add_argument("--domain", action="append", help="sitemaps: limit to this domain (repeatable)")
     d.add_argument("--days", type=int, default=90, help="gdelt: how many days back")
+    d.add_argument("--max-sitemaps", type=int, default=500, help="sitemaps: cap on sitemap files per domain")
     d.set_defaults(func=cmd_discover)
 
     g = sub.add_parser("gkg-sql", help="print BigQuery SQL for historical discovery via GDELT GKG")
@@ -175,6 +189,10 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("file")
     c.set_defaults(func=cmd_load_codes)
 
+    ec = sub.add_parser("export-candidates", help="write public data/candidates.csv and crawl_status.json (no text)")
+    ec.add_argument("--new-urls", type=int, default=None, help="number of URLs discovered this run, for the status file")
+    ec.set_defaults(func=cmd_export_candidates)
+    sub.add_parser("export-coding", help="write public data/coding_summary.csv (counts only)").set_defaults(func=cmd_export_coding)
     sub.add_parser("status", help="show pipeline counts").set_defaults(func=cmd_status)
     sub.add_parser("validate", help="check the public CSVs").set_defaults(func=cmd_validate)
     return p

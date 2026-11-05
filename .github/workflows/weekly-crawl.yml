@@ -1,0 +1,104 @@
+name: Weekly crawl
+
+# Finds new reports of study visits, fetches them politely, pre-fills fields and
+# publishes a review list (data/candidates.csv). Article texts stay in a private
+# Actions cache and are never committed.
+
+on:
+  schedule:
+    - cron: "17 7 * * 1"        # Mondays 07:17 UTC (02:17 New York)
+  workflow_dispatch:
+    inputs:
+      since_days:
+        description: "Look back this many days in sitemaps (use ~3000 for a one-off historical backfill)"
+        default: "35"
+      max_sitemaps:
+        description: "Cap on sitemap files read per domain"
+        default: "40"
+      fetch_limit:
+        description: "Maximum articles to fetch this run"
+        default: "300"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Restore local article store
+        uses: actions/cache/restore@v4
+        with:
+          path: data/tracker.db
+          key: tracker-db-${{ github.run_id }}
+          restore-keys: tracker-db-
+
+      - name: Discover
+        env:
+          SINCE_DAYS: ${{ inputs.since_days || '35' }}
+          MAX_SITEMAPS: ${{ inputs.max_sitemaps || '40' }}
+        run: |
+          count() { python -c "from tracker import db; print(db.connect().execute('SELECT COUNT(*) FROM articles').fetchone()[0])"; }
+          BEFORE=$(count)
+          python -m tracker discover gdelt --days 14
+          python -m tracker discover sitemaps --since "$(date -u -d "$SINCE_DAYS days ago" +%F)" --max-sitemaps "$MAX_SITEMAPS"
+          AFTER=$(count)
+          echo "NEW_URLS=$((AFTER - BEFORE))" >> "$GITHUB_ENV"
+
+      - name: Fetch, score and pre-fill
+        run: |
+          python -m tracker fetch --limit "${{ inputs.fetch_limit || '300' }}"
+          python -m tracker extract
+
+      - name: Export review list (metadata only)
+        run: |
+          python -m tracker export-candidates --new-urls "$NEW_URLS"
+          python -m tracker validate
+          python -m tracker status
+
+      - name: Save local article store
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/tracker.db
+          key: tracker-db-${{ github.run_id }}
+
+      - name: Commit review list
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/candidates.csv data/crawl_status.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Weekly crawl: update candidate list"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Weekly crawl"
+            echo ""
+            echo "- New URLs discovered: ${NEW_URLS:-0}"
+            echo '```'
+            python -m tracker status || true
+            echo '```'
+            echo "Review data/candidates.csv and add accepted visits to data/visits.csv."
+          } >> "$GITHUB_STEP_SUMMARY"
